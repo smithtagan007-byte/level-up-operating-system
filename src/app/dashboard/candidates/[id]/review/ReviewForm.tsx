@@ -136,7 +136,7 @@ export function ReviewForm({ candidateId, candidateName, existing }: ReviewFormP
             onChange={(e) => setEvidenceNotes(e.target.value)}
             rows={4}
             placeholder="e.g. 8 years in SaaS sales, exceeded quota 5/6 quarters, specific examples of..."
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 resize-none"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 resize-none"
           />
         </div>
 
@@ -150,7 +150,7 @@ export function ReviewForm({ candidateId, candidateName, existing }: ReviewFormP
             onChange={(e) => setRiskNotes(e.target.value)}
             rows={4}
             placeholder="e.g. Job hopping pattern — 3 roles in 4 years. Explained as company restructures. Verified via LinkedIn..."
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 resize-none"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 resize-none"
           />
         </div>
       </div>

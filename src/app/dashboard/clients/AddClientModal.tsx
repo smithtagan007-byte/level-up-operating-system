@@ -58,7 +58,7 @@ export function AddClientModal({ users }: AddClientModalProps) {
                   name="name"
                   required
                   placeholder="e.g. Acme Corp"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
                 />
               </div>
 
@@ -67,7 +67,7 @@ export function AddClientModal({ users }: AddClientModalProps) {
                 <input
                   name="industry"
                   placeholder="e.g. Technology"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
                 />
               </div>
 
@@ -75,7 +75,7 @@ export function AddClientModal({ users }: AddClientModalProps) {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Grade</label>
                 <select
                   name="grade"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 bg-white"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 bg-white"
                 >
                   <option value="">Select grade</option>
                   <option value="A">A — Top tier</option>
@@ -94,7 +94,7 @@ export function AddClientModal({ users }: AddClientModalProps) {
                 ) : (
                   <select
                     name="owner_id"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 bg-white"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 bg-white"
                   >
                     <option value="">Unassigned</option>
                     {users.map((u) => (

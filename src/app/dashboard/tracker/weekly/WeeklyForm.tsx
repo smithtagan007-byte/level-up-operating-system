@@ -93,7 +93,7 @@ export function WeeklyForm({ userId, weeks, initialWeek, existingByWeek, autoCvs
   }
 
   const autoCvs = autoCvsByWeek[selectedWeek] ?? 0
-  const inputClass = 'w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 text-right'
+  const inputClass = 'w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 text-right'
 
   return (
     <div className="space-y-6">
@@ -103,7 +103,7 @@ export function WeeklyForm({ userId, weeks, initialWeek, existingByWeek, autoCvs
           <select
             value={selectedWeek}
             onChange={e => handleWeekChange(e.target.value)}
-            className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 bg-white"
+            className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 bg-white"
           >
             {weeks.map(w => (
               <option key={w.weekStart} value={w.weekStart}>

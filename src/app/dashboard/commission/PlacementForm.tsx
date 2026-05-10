@@ -159,7 +159,7 @@ export function PlacementForm({ mode, placementId, initialData, recruiters }: Pr
   }
 
   const input =
-    'w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900'
+    'w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900'
   const label = 'block text-xs font-medium text-gray-600 mb-1'
   const section = 'bg-white border border-gray-200 rounded-xl p-6'
   const sectionTitle = 'text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4'
@@ -389,7 +389,7 @@ export function PlacementForm({ mode, placementId, initialData, recruiters }: Pr
                 <span className="text-gray-400 font-normal">calculated</span>
               </label>
               <div
-                className={`${input} bg-gray-50 cursor-default ${
+                className={`w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 cursor-default focus:outline-none ${
                   outstanding > 0 ? 'text-red-600 font-semibold' : 'text-gray-400'
                 }`}
               >

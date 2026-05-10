@@ -60,7 +60,7 @@ export function AddFollowUpModal({ currentUserId, users, clients, candidates, ro
             <form ref={formRef} onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Type <span className="text-red-500">*</span></label>
-                <select name="follow_up_type" required className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 bg-white">
+                <select name="follow_up_type" required className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 bg-white">
                   <option value="">Select type</option>
                   {FOLLOW_UP_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
@@ -77,7 +77,7 @@ export function AddFollowUpModal({ currentUserId, users, clients, candidates, ro
                   ))}
                 </div>
                 <input type="hidden" name="related_type" value={relatedType} />
-                <select name="related_id" required className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 bg-white">
+                <select name="related_id" required className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 bg-white">
                   <option value="">Select {relatedType}</option>
                   {entities.map(e => <option key={e.id} value={e.id}>{e.label}</option>)}
                 </select>
@@ -85,24 +85,24 @@ export function AddFollowUpModal({ currentUserId, users, clients, candidates, ro
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Reason</label>
-                <input name="follow_up_reason" placeholder="Brief reason for this follow-up" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900" />
+                <input name="follow_up_reason" placeholder="Brief reason for this follow-up" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900" />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Due Date <span className="text-red-500">*</span></label>
-                <input type="date" name="due_date" required className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900" />
+                <input type="date" name="due_date" required className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900" />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Owner <span className="text-red-500">*</span></label>
-                <select name="owner_id" required defaultValue={currentUserId} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 bg-white">
+                <select name="owner_id" required defaultValue={currentUserId} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 bg-white">
                   {users.map(u => <option key={u.id} value={u.id}>{u.full_name}</option>)}
                 </select>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-                <textarea name="notes" rows={2} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 resize-none" />
+                <textarea name="notes" rows={2} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 resize-none" />
               </div>
 
               {error && <p className="text-sm text-red-600">{error}</p>}

@@ -51,7 +51,7 @@ export function AssignOwnerSelect({ clientId, currentOwnerId, currentOwnerName, 
       <select
         value={selected}
         onChange={(e) => setSelected(e.target.value)}
-        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 bg-white"
+        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 bg-white"
         autoFocus
       >
         <option value="">Unassigned</option>

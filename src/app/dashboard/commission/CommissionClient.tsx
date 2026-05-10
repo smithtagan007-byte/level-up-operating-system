@@ -170,7 +170,7 @@ export function CommissionClient({ placements, recruiters, isDirector }: Props) 
   }
 
   const selectClass =
-    'border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900'
+    'border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900'
 
   return (
     <div className="space-y-4">
@@ -201,7 +201,7 @@ export function CommissionClient({ placements, recruiters, isDirector }: Props) 
               placeholder="Search candidate, client, invoice…"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 w-64"
+              className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 w-64"
             />
             <select value={filterRecruiter} onChange={e => setFilterRecruiter(e.target.value)} className={selectClass}>
               <option value="all">All Recruiters</option>

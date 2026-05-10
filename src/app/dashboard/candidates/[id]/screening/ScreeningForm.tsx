@@ -125,14 +125,14 @@ export function ScreeningForm({ candidateId, existing }: ScreeningFormProps) {
               value={values[field.key] ?? ''}
               onChange={(e) => set(field.key, e.target.value)}
               placeholder={field.key === 'notice_period' ? 'e.g. 4 weeks — negotiable' : ''}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
             />
           ) : (
             <textarea
               value={values[field.key] ?? ''}
               onChange={(e) => set(field.key, e.target.value)}
               rows={field.highlight ? 5 : 3}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 resize-none"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 resize-none"
             />
           )}
         </div>

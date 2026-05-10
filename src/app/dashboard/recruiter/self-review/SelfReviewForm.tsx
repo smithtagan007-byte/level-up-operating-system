@@ -146,7 +146,7 @@ export function SelfReviewForm({ userId, weekStart, weeks, existing, userRole, i
     })
   }
 
-  const inputClass = 'w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 resize-none'
+  const inputClass = 'w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 resize-none'
   const readOnlyInputClass = 'w-full border border-gray-100 rounded-lg px-3 py-2.5 text-sm bg-gray-50 text-gray-600 resize-none'
 
   return (
@@ -164,7 +164,7 @@ export function SelfReviewForm({ userId, weekStart, weeks, existing, userRole, i
         <select
           value={weekStart}
           onChange={e => handleWeekChange(e.target.value)}
-          className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 bg-white"
+          className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 bg-white"
         >
           {weeks.map(w => (
             <option key={w} value={w}>

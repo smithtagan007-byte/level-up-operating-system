@@ -61,7 +61,7 @@ export function EditRoleModal({ roleId, roleTitle, clientName, existing, users, 
     }
   }
 
-  const inputClass = 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900'
+  const inputClass = 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900'
   const selectClass = `${inputClass} bg-white`
 
   return (

@@ -86,7 +86,7 @@ export default async function ClientDetailPage({ params }: Props) {
             <p className="text-gray-400 text-sm">No roles for this client yet.</p>
           </div>
         ) : (
-          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+          <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50">

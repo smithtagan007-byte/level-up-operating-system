@@ -91,7 +91,7 @@ export function ArticleEditClient({
               setError(null)
             }}
             placeholder="e.g. Updated screening standards to clarify compensation alignment step"
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
           />
         </div>
 
@@ -109,7 +109,7 @@ export function ArticleEditClient({
               value={content}
               onChange={e => setContent(e.target.value)}
               rows={28}
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-mono leading-relaxed focus:outline-none focus:ring-2 focus:ring-gray-900 resize-y"
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-mono leading-relaxed text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 resize-y"
             />
           </div>
         )}

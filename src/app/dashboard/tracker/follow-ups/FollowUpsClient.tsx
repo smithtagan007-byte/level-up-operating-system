@@ -66,14 +66,14 @@ export function FollowUpsClient({ followUps, owners }: Props) {
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3 mb-5">
-        <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-900">
+        <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900">
           {STATUS_FILTER.map(s => <option key={s}>{s}</option>)}
         </select>
-        <select value={filterOwner} onChange={e => setFilterOwner(e.target.value)} className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-900">
+        <select value={filterOwner} onChange={e => setFilterOwner(e.target.value)} className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900">
           <option value="All">All Owners</option>
           {owners.map(o => <option key={o.id} value={o.full_name}>{o.full_name}</option>)}
         </select>
-        <select value={filterType} onChange={e => setFilterType(e.target.value)} className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-900">
+        <select value={filterType} onChange={e => setFilterType(e.target.value)} className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900">
           {TYPE_FILTER.map(t => <option key={t}>{t}</option>)}
         </select>
         <span className="text-xs text-gray-400 self-center">{filtered.length} item{filtered.length !== 1 ? 's' : ''}</span>
@@ -84,7 +84,7 @@ export function FollowUpsClient({ followUps, owners }: Props) {
           <p className="text-gray-400 text-sm">No follow-ups match the current filters.</p>
         </div>
       ) : (
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+        <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50">

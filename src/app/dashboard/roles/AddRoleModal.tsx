@@ -65,7 +65,7 @@ export function AddRoleModal({ clients, preselectedClientId }: AddRoleModalProps
                   name="title"
                   required
                   placeholder="e.g. Senior Account Manager"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
                 />
               </div>
 
@@ -77,7 +77,7 @@ export function AddRoleModal({ clients, preselectedClientId }: AddRoleModalProps
                   name="client_id"
                   required
                   defaultValue={preselectedClientId ?? ''}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 bg-white"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 bg-white"
                 >
                   <option value="">Select client</option>
                   {clients.map((c) => (

@@ -58,7 +58,7 @@ export function ManualSidebar({ sections }: Props) {
           placeholder="Search manual…"
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-gray-900 mb-4"
+          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 mb-4"
         />
         <nav className="space-y-0.5">
           {filtered.map(section => {

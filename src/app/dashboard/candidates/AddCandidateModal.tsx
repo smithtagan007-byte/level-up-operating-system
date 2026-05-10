@@ -58,7 +58,7 @@ export function AddCandidateModal({ roles }: AddCandidateModalProps) {
                   name="full_name"
                   required
                   placeholder="e.g. Jane Smith"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
                 />
               </div>
 
@@ -68,7 +68,7 @@ export function AddCandidateModal({ roles }: AddCandidateModalProps) {
                   name="email"
                   type="email"
                   placeholder="jane@example.com"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
                 />
               </div>
 
@@ -77,7 +77,7 @@ export function AddCandidateModal({ roles }: AddCandidateModalProps) {
                 <select
                   name="role_id"
                   required
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 bg-white"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 bg-white"
                 >
                   <option value="">Select role</option>
                   {roles.map((r) => (

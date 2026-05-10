@@ -11,7 +11,7 @@ export default async function RolesPage({ searchParams }: Props) {
   const { client: preselectedClientId } = await searchParams
   const supabase = await createClient()
 
-  const [{ data: roles }, { data: clients }] = await Promise.all([
+  const [{ data: roles }, { data: clients }, { data: teamRows }] = await Promise.all([
     supabase
       .from('roles')
       .select('id, title, status, intake_completed, clients(name)')
@@ -20,7 +20,25 @@ export default async function RolesPage({ searchParams }: Props) {
       .from('clients')
       .select('id, name')
       .order('name'),
+    supabase
+      .from('role_team')
+      .select('role_id, user_id, role_on_role, user_profiles(full_name)')
+      .eq('is_active', true),
   ])
+
+  // Build a map: role_id → { clientOwner, specialistCount }
+  type TeamInfo = { clientOwnerName: string | null; specialistCount: number }
+  const teamMap: Record<string, TeamInfo> = {}
+  for (const row of teamRows ?? []) {
+    if (!teamMap[row.role_id]) teamMap[row.role_id] = { clientOwnerName: null, specialistCount: 0 }
+    const up = Array.isArray(row.user_profiles) ? row.user_profiles[0] : row.user_profiles
+    const name = (up as { full_name: string } | null)?.full_name ?? null
+    if (row.role_on_role === 'client_owner') {
+      teamMap[row.role_id].clientOwnerName = name
+    } else {
+      teamMap[row.role_id].specialistCount++
+    }
+  }
 
   return (
     <div>
@@ -43,6 +61,8 @@ export default async function RolesPage({ searchParams }: Props) {
               <tr className="border-b border-gray-100 bg-gray-50">
                 <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Role</th>
                 <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Client</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Client Owner</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Team</th>
                 <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
                 <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Intake</th>
                 <th className="px-5 py-3" />
@@ -51,10 +71,23 @@ export default async function RolesPage({ searchParams }: Props) {
             <tbody className="divide-y divide-gray-50">
               {roles.map((role) => {
                 const clientRow = (Array.isArray(role.clients) ? role.clients[0] : role.clients) as { name: string } | null
+                const team = teamMap[role.id] ?? { clientOwnerName: null, specialistCount: 0 }
                 return (
                   <tr key={role.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-5 py-4 font-medium text-gray-900">{role.title}</td>
                     <td className="px-5 py-4 text-gray-600">{clientRow?.name ?? <span className="text-gray-300">—</span>}</td>
+                    <td className="px-5 py-4">
+                      {team.clientOwnerName
+                        ? <span className="text-gray-700 text-sm">{team.clientOwnerName}</span>
+                        : <span className="text-xs text-amber-600 font-medium">Unassigned</span>
+                      }
+                    </td>
+                    <td className="px-5 py-4">
+                      {team.specialistCount > 0
+                        ? <span className="text-xs text-gray-500">{team.specialistCount} specialist{team.specialistCount !== 1 ? 's' : ''}</span>
+                        : <span className="text-gray-300 text-xs">—</span>
+                      }
+                    </td>
                     <td className="px-5 py-4"><StatusBadge status={role.status} /></td>
                     <td className="px-5 py-4">
                       {role.intake_completed

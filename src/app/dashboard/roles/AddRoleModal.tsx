@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { createRoleAction } from './actions'
 
 interface Client {
@@ -14,6 +15,7 @@ interface AddRoleModalProps {
 }
 
 export function AddRoleModal({ clients, preselectedClientId }: AddRoleModalProps) {
+  const router = useRouter()
   const [open, setOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
@@ -24,9 +26,9 @@ export function AddRoleModal({ clients, preselectedClientId }: AddRoleModalProps
     setPending(true)
     setError(null)
     try {
-      await createRoleAction(new FormData(e.currentTarget))
-      formRef.current?.reset()
+      const { id } = await createRoleAction(new FormData(e.currentTarget))
       setOpen(false)
+      router.push(`/dashboard/roles/${id}?assignTeam=1`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
     } finally {
@@ -87,7 +89,7 @@ export function AddRoleModal({ clients, preselectedClientId }: AddRoleModalProps
               </div>
 
               <p className="text-xs text-gray-500 bg-gray-50 rounded-lg px-3 py-2">
-                New roles start in <strong>Intake</strong>. Intake must be completed before the role can move to Sourcing.
+                New roles start in <strong>Intake</strong>. You&apos;ll be able to assign the team immediately after saving.
               </p>
 
               {error && <p className="text-sm text-red-600">{error}</p>}

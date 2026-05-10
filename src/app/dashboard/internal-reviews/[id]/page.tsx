@@ -76,7 +76,7 @@ export default async function ReviewDetailPage({ params }: Props) {
         id, client_owner_status, client_owner_notes, talent_manager_status,
         talent_manager_notes, final_status, created_at,
         candidates(id, full_name, tier, risk_level, email),
-        roles(title, clients(name, owner_id)),
+        roles(id, title, clients(name)),
         co_profile:client_owner_id(full_name),
         tm_profile:talent_manager_id(full_name)
       `)
@@ -88,19 +88,24 @@ export default async function ReviewDetailPage({ params }: Props) {
   if (!review) notFound()
 
   const candidateId = ((Array.isArray(review.candidates) ? review.candidates[0] : review.candidates) as { id: string } | null)?.id
-  const [{ data: scorecard }, { data: screening }] = await Promise.all([
+  const roleId = ((Array.isArray(review.roles) ? review.roles[0] : review.roles) as { id: string } | null)?.id
+
+  const [{ data: scorecard }, { data: screening }, { data: coTeamMember }] = await Promise.all([
     supabase.from('candidate_reviews').select('*').eq('candidate_id', candidateId!).maybeSingle(),
     supabase.from('candidate_screenings').select('*').eq('candidate_id', candidateId!).maybeSingle(),
+    roleId
+      ? supabase.from('role_team').select('user_id').eq('role_id', roleId).eq('role_on_role', 'client_owner').eq('is_active', true).eq('user_id', user!.id).maybeSingle()
+      : Promise.resolve({ data: null, error: null }),
   ])
 
   const candidate = (Array.isArray(review.candidates) ? review.candidates[0] : review.candidates) as { id: string; full_name: string; tier: string | null; risk_level: string | null; email: string | null } | null
-  const role = (Array.isArray(review.roles) ? review.roles[0] : review.roles) as { title: string; clients: unknown } | null
-  const client = role ? ((Array.isArray(role.clients) ? (role.clients as { name: string; owner_id: string | null }[])[0] : role.clients) as { name: string; owner_id: string | null } | null) : null
+  const role = (Array.isArray(review.roles) ? review.roles[0] : review.roles) as { id: string; title: string; clients: unknown } | null
+  const client = role ? ((Array.isArray(role.clients) ? (role.clients as { name: string }[])[0] : role.clients) as { name: string } | null) : null
   const coProfile = (Array.isArray(review.co_profile) ? review.co_profile[0] : review.co_profile) as { full_name: string } | null
   const tmProfile = (Array.isArray(review.tm_profile) ? review.tm_profile[0] : review.tm_profile) as { full_name: string } | null
 
   const userRole = currentProfile?.role ?? ''
-  const canActionCO = client?.owner_id === user!.id
+  const canActionCO = !!coTeamMember
   const canActionTM = userRole === 'talent_manager' || userRole === 'director'
 
   const finalCfg = finalStatusConfig[review.final_status as keyof typeof finalStatusConfig] ?? finalStatusConfig.pending

@@ -32,9 +32,10 @@ interface ReviewFormProps {
   candidateId: string
   candidateName: string
   existing?: Partial<ReviewData>
+  isOnTeam: boolean
 }
 
-export function ReviewForm({ candidateId, candidateName, existing }: ReviewFormProps) {
+export function ReviewForm({ candidateId, candidateName, existing, isOnTeam }: ReviewFormProps) {
   const router = useRouter()
   const [scores, setScores] = useState<Partial<Record<keyof ReviewData, number>>>(
     existing
@@ -81,6 +82,12 @@ export function ReviewForm({ candidateId, candidateName, existing }: ReviewFormP
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
+      {!isOnTeam && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
+          <p className="text-sm text-amber-800">You are not assigned to this role. Ask your Talent Manager to add you.</p>
+        </div>
+      )}
+
       {/* Progress indicator */}
       <div className="bg-gray-50 rounded-lg px-4 py-3 flex items-center justify-between">
         <span className="text-sm text-gray-600">Scores completed</span>

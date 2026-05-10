@@ -24,6 +24,7 @@ export default async function RecruiterDashboardPage({ searchParams }: Props) {
 
   const currentWeek = getWeekStart(new Date())
 
+  // Batch 1: profile + recruiter list
   const [{ data: myProfile }, { data: allRecruiters }] = await Promise.all([
     supabase.from('user_profiles').select('role, full_name').eq('id', user.id).single(),
     supabase.from('user_profiles')
@@ -36,10 +37,18 @@ export default async function RecruiterDashboardPage({ searchParams }: Props) {
   const viewUserId = isManager && params.userId ? params.userId : user.id
   const isViewingSelf = viewUserId === user.id
 
-  const [{ data: roleTrackers }, { data: weekData }, { data: openFollowUps }, { data: viewedProfile }, { data: selfReview }] = await Promise.all([
-    supabase.from('role_tracker')
-      .select('role_id, expected_revenue, revenue_probability, next_action, next_action_date, cvs_submitted, follow_up_status, updated_at, roles(id, title, status, clients(name))')
-      .eq('delivery_recruiter_id', viewUserId),
+  // Batch 2: role_team + week/review data (all independent)
+  const [
+    { data: myTeamRoles },
+    { data: weekData },
+    { data: openFollowUps },
+    viewedNameResult,
+    { data: selfReview },
+  ] = await Promise.all([
+    supabase.from('role_team')
+      .select('role_id, role_on_role')
+      .eq('user_id', viewUserId)
+      .eq('is_active', true),
     supabase.from('weekly_role_data')
       .select('cvs, first_interviews, second_interviews, assessments, offers, starts, revenue, cost')
       .eq('user_id', viewUserId)
@@ -61,32 +70,66 @@ export default async function RecruiterDashboardPage({ searchParams }: Props) {
       .maybeSingle(),
   ])
 
-  const roleIds = (roleTrackers ?? []).map(t => t.role_id)
+  const myRoleIds = (myTeamRoles ?? []).map(r => r.role_id)
+  const myRoleOnRoleMap: Record<string, string> = Object.fromEntries(
+    (myTeamRoles ?? []).map(r => [r.role_id, r.role_on_role])
+  )
 
-  const { data: roleRevenues } = roleIds.length > 0
-    ? await supabase.from('role_revenue')
-      .select('role_id, potential_revenue, weighted_forecast_revenue, actual_revenue, revenue_variance, revenue_status')
-      .in('role_id', roleIds)
-    : { data: [] as { role_id: string; potential_revenue: number | null; weighted_forecast_revenue: number | null; actual_revenue: number | null; revenue_variance: number | null; revenue_status: string }[] }
+  // Batch 3: role trackers (needs myRoleIds) + teammates on shared roles
+  type RoleTrackerRow = { role_id: string; expected_revenue: number | null; revenue_probability: number | null; next_action: string | null; next_action_date: string | null; cvs_submitted: number; follow_up_status: string; updated_at: string; roles: unknown }
+  type TeamRow = { role_id: string; user_id: string; role_on_role: string; user_profiles: { full_name: string } | { full_name: string }[] | null }
 
-  const { data: candidates } = roleIds.length > 0
-    ? await supabase.from('candidates')
-      .select('id, full_name, submitted_to_client, client_owner_approved, role_id')
-      .in('role_id', roleIds)
-    : { data: [] as { id: string; full_name: string; submitted_to_client: boolean; client_owner_approved: boolean; role_id: string }[] }
+  const [{ data: roleTrackers }, { data: allTeamRows }] = await Promise.all([
+    myRoleIds.length > 0
+      ? supabase.from('role_tracker')
+          .select('role_id, expected_revenue, revenue_probability, next_action, next_action_date, cvs_submitted, follow_up_status, updated_at, roles(id, title, status, clients(name))')
+          .in('role_id', myRoleIds)
+      : Promise.resolve({ data: [] as RoleTrackerRow[], error: null }),
+    myRoleIds.length > 0
+      ? supabase.from('role_team')
+          .select('role_id, user_id, role_on_role, user_profiles(full_name)')
+          .in('role_id', myRoleIds)
+          .eq('is_active', true)
+          .neq('user_id', viewUserId)
+      : Promise.resolve({ data: [] as TeamRow[], error: null }),
+  ])
+
+  // Build teammates map: role_id → names of other team members
+  const teammatesMap: Record<string, string[]> = {}
+  for (const row of (allTeamRows ?? []) as TeamRow[]) {
+    if (!teammatesMap[row.role_id]) teammatesMap[row.role_id] = []
+    const up = Array.isArray(row.user_profiles) ? row.user_profiles[0] : row.user_profiles
+    const name = (up as { full_name: string } | null)?.full_name ?? 'Unknown'
+    teammatesMap[row.role_id].push(name)
+  }
+
+  const roleIds = ((roleTrackers as RoleTrackerRow[]) ?? []).map(t => t.role_id)
+
+  const [{ data: roleRevenues }, { data: candidates }] = await Promise.all([
+    roleIds.length > 0
+      ? supabase.from('role_revenue')
+          .select('role_id, potential_revenue, weighted_forecast_revenue, actual_revenue, revenue_variance, revenue_status')
+          .in('role_id', roleIds)
+      : Promise.resolve({ data: [] as { role_id: string; potential_revenue: number | null; weighted_forecast_revenue: number | null; actual_revenue: number | null; revenue_variance: number | null; revenue_status: string }[], error: null }),
+    roleIds.length > 0
+      ? supabase.from('candidates')
+          .select('id, full_name, submitted_to_client, client_owner_approved, role_id')
+          .in('role_id', roleIds)
+      : Promise.resolve({ data: [] as { id: string; full_name: string; submitted_to_client: boolean; client_owner_approved: boolean; role_id: string }[], error: null }),
+  ])
 
   const candidateIds = (candidates ?? []).map(c => c.id)
 
   const { data: pendingReviews } = candidateIds.length > 0
     ? await supabase.from('internal_reviews')
-      .select('id, final_status, created_at, candidates(full_name, role_id)')
-      .in('candidate_id', candidateIds)
-      .eq('final_status', 'pending')
+        .select('id, final_status, created_at, candidates(full_name, role_id)')
+        .in('candidate_id', candidateIds)
+        .eq('final_status', 'pending')
     : { data: [] as { id: string; final_status: string; created_at: string; candidates: { full_name: string; role_id: string } | null }[] }
 
   // Compute derived data
-  const activeRoles = (roleTrackers ?? []).filter(t => {
-    const role = (Array.isArray(t.roles) ? t.roles[0] : t.roles) as { status: string } | null
+  const activeRoles = ((roleTrackers as RoleTrackerRow[]) ?? []).filter(t => {
+    const role = (Array.isArray(t.roles) ? (t.roles as { status: string }[])[0] : t.roles) as { status: string } | null
     return role?.status !== 'closed'
   })
 
@@ -98,7 +141,6 @@ export default async function RecruiterDashboardPage({ searchParams }: Props) {
     return s + (t.expected_revenue * t.revenue_probability) / 100
   }, 0)
 
-  // Structured revenue from role_revenue
   const structuredPotential = (roleRevenues ?? [])
     .filter(r => !['Closed Lost'].includes(r.revenue_status))
     .reduce((s, r) => s + Number(r.potential_revenue ?? 0), 0)
@@ -123,7 +165,7 @@ export default async function RecruiterDashboardPage({ searchParams }: Props) {
   const totalInterviews = (w?.first_interviews ?? 0) + (w?.second_interviews ?? 0)
   const hasSubmittedWeek = !!weekData
 
-  const displayName = (viewedProfile?.data as string | null) ?? 'Recruiter'
+  const displayName = (viewedNameResult?.data as string | null) ?? 'Recruiter'
 
   return (
     <div className="space-y-8">
@@ -221,7 +263,7 @@ export default async function RecruiterDashboardPage({ searchParams }: Props) {
         </div>
       </div>
 
-      {/* Structured Revenue (from role_revenue module) */}
+      {/* Structured Revenue */}
       {hasStructuredRevenue && (
         <div>
           <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Revenue Forecast</h2>
@@ -264,20 +306,39 @@ export default async function RecruiterDashboardPage({ searchParams }: Props) {
             <table className="min-w-full text-sm whitespace-nowrap">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50">
-                  {['Role', 'Client', 'CVs', 'Probability', 'Next Action', 'Due'].map(h => (
+                  {['Role', 'Client', 'My Role', 'Team', 'CVs', 'Probability', 'Next Action', 'Due'].map(h => (
                     <th key={h} className="text-left px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {activeRoles.map(t => {
-                  const role = (Array.isArray(t.roles) ? t.roles[0] : t.roles) as { id: string; title: string; status: string; clients: unknown } | null
+                  const role = (Array.isArray(t.roles) ? (t.roles as { id: string; title: string; status: string; clients: unknown }[])[0] : t.roles) as { id: string; title: string; status: string; clients: unknown } | null
                   const client = role ? ((Array.isArray(role.clients) ? (role.clients as { name: string }[])[0] : role.clients) as { name: string } | null) : null
                   const prob = t.revenue_probability
+                  const roleOnRole = myRoleOnRoleMap[t.role_id]
+                  const teammates = teammatesMap[t.role_id] ?? []
                   return (
                     <tr key={t.role_id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-4 py-3 font-medium text-gray-900">{role?.title ?? '—'}</td>
                       <td className="px-4 py-3 text-gray-600">{client?.name ?? '—'}</td>
+                      <td className="px-4 py-3">
+                        {roleOnRole === 'client_owner' ? (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-900 text-white">
+                            Client Owner
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                            Delivery
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        {teammates.length > 0
+                          ? <span className="text-xs text-gray-500">{teammates.join(', ')}</span>
+                          : <span className="text-gray-300">—</span>
+                        }
+                      </td>
                       <td className="px-4 py-3 text-gray-700 font-semibold">{t.cvs_submitted}</td>
                       <td className="px-4 py-3">
                         {prob != null
@@ -316,7 +377,7 @@ export default async function RecruiterDashboardPage({ searchParams }: Props) {
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {hotRoles.map(t => {
-                  const role = (Array.isArray(t.roles) ? t.roles[0] : t.roles) as { title: string; clients: unknown } | null
+                  const role = (Array.isArray(t.roles) ? (t.roles as { title: string; clients: unknown }[])[0] : t.roles) as { title: string; clients: unknown } | null
                   const client = role ? ((Array.isArray(role.clients) ? (role.clients as { name: string }[])[0] : role.clients) as { name: string } | null) : null
                   return (
                     <tr key={t.role_id} className="hover:bg-gray-50">
@@ -340,7 +401,6 @@ export default async function RecruiterDashboardPage({ searchParams }: Props) {
 
       {/* Pending work */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Pending internal reviews */}
         <div className="bg-white border border-gray-200 rounded-xl p-5">
           <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
             CVs Pending Review ({(pendingReviews ?? []).length})
@@ -363,7 +423,6 @@ export default async function RecruiterDashboardPage({ searchParams }: Props) {
           )}
         </div>
 
-        {/* CO approved, not yet submitted */}
         <div className="bg-white border border-gray-200 rounded-xl p-5">
           <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
             Approved, Not Submitted ({coApprovedNotSubmitted.length})
@@ -383,7 +442,6 @@ export default async function RecruiterDashboardPage({ searchParams }: Props) {
           )}
         </div>
 
-        {/* CVs submitted, pending feedback */}
         <div className="bg-white border border-gray-200 rounded-xl p-5">
           <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
             Awaiting Client Feedback ({submittedCandidates.length})
@@ -404,7 +462,7 @@ export default async function RecruiterDashboardPage({ searchParams }: Props) {
         </div>
       </div>
 
-      {/* Weekly Self-Review card */}
+      {/* Weekly Self-Review */}
       <div>
         <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Weekly Self-Review</h2>
         <div className="bg-white border border-gray-200 rounded-xl p-5">
@@ -432,7 +490,7 @@ export default async function RecruiterDashboardPage({ searchParams }: Props) {
                 )}
                 {selfReview.manager_comments && (
                   <p className="text-xs text-gray-500 mt-2 max-w-md truncate">
-                    Manager: "{selfReview.manager_comments}"
+                    Manager: &quot;{selfReview.manager_comments}&quot;
                   </p>
                 )}
               </div>

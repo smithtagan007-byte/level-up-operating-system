@@ -11,7 +11,7 @@ function daysOpen(dateOpened: string | null, dateClosed: string | null): number 
 export default async function RoleTrackerPage() {
   const supabase = await createClient()
 
-  const [{ data: roles }, { data: trackers }, { data: users }, { data: revenues }] = await Promise.all([
+  const [{ data: roles }, { data: trackers }, { data: users }, { data: revenues }, { data: teamRows }] = await Promise.all([
     supabase
       .from('roles')
       .select('id, title, status, created_at, clients(id, name)')
@@ -20,16 +20,30 @@ export default async function RoleTrackerPage() {
     supabase.from('role_tracker').select('*'),
     supabase.from('user_profiles').select('id, full_name').order('full_name'),
     supabase.from('role_revenue').select('role_id, potential_revenue, weighted_forecast_revenue, actual_revenue, revenue_variance, revenue_status'),
+    supabase.from('role_team').select('role_id, user_id, role_on_role, user_profiles(full_name)').eq('is_active', true),
   ])
 
   const trackerMap = Object.fromEntries((trackers ?? []).map(t => [t.role_id, t]))
-  const userMap = Object.fromEntries((users ?? []).map(u => [u.id, u.full_name]))
   const revenueMap = Object.fromEntries((revenues ?? []).map(r => [r.role_id, r]))
+
+  // Build team map: role_id → { clientOwner, deliveryTeam }
+  const teamMap: Record<string, { clientOwner: string | null; deliveryTeam: string[] }> = {}
+  for (const row of teamRows ?? []) {
+    if (!teamMap[row.role_id]) teamMap[row.role_id] = { clientOwner: null, deliveryTeam: [] }
+    const up = Array.isArray(row.user_profiles) ? row.user_profiles[0] : row.user_profiles
+    const name = (up as { full_name: string } | null)?.full_name ?? 'Unknown'
+    if (row.role_on_role === 'client_owner') {
+      teamMap[row.role_id].clientOwner = name
+    } else {
+      teamMap[row.role_id].deliveryTeam.push(name)
+    }
+  }
 
   const rows = (roles ?? []).map(role => {
     const client = (Array.isArray(role.clients) ? role.clients[0] : role.clients) as { id: string; name: string } | null
     const t = trackerMap[role.id]
     const rev = revenueMap[role.id]
+    const team = teamMap[role.id] ?? { clientOwner: null, deliveryTeam: [] }
 
     return {
       role_id: role.id,
@@ -39,7 +53,10 @@ export default async function RoleTrackerPage() {
       created_at: role.created_at,
       level: t?.level ?? null,
       location: t?.location ?? null,
-      delivery_recruiter_name: t?.delivery_recruiter_id ? (userMap[t.delivery_recruiter_id] ?? null) : null,
+      client_owner_name: team.clientOwner,
+      delivery_team_names: team.deliveryTeam,
+      // keep legacy field for EditRoleModal backward-compat
+      delivery_recruiter_name: team.deliveryTeam[0] ?? null,
       date_opened: t?.date_opened ?? role.created_at,
       days_open: daysOpen(t?.date_opened ?? role.created_at, t?.date_closed ?? null),
       cvs_submitted: t?.cvs_submitted ?? 0,
@@ -49,11 +66,9 @@ export default async function RoleTrackerPage() {
       role_originator_id: t?.role_originator_id ?? null,
       delivery_recruiter_id: t?.delivery_recruiter_id ?? null,
       sourced_location: t?.sourced_location ?? null,
-      // From role_tracker (legacy fields for EditRoleModal)
       expected_revenue: t?.expected_revenue ?? null,
       actual_revenue: t?.actual_revenue ?? null,
       revenue_probability: t?.revenue_probability ?? null,
-      // From role_revenue (new structured revenue)
       potential_revenue: rev?.potential_revenue ?? null,
       weighted_forecast_revenue: rev?.weighted_forecast_revenue ?? null,
       rev_actual_revenue: rev?.actual_revenue ?? null,

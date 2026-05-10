@@ -3,21 +3,22 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
-export async function createRoleAction(formData: FormData) {
+export async function createRoleAction(formData: FormData): Promise<{ id: string }> {
   const supabase = await createClient()
 
   const title = formData.get('title') as string
   const client_id = formData.get('client_id') as string
 
-  const { error } = await supabase.from('roles').insert({
+  const { data, error } = await supabase.from('roles').insert({
     title: title.trim(),
     client_id,
     status: 'intake',
     intake_completed: false,
-  })
+  }).select('id').single()
 
   if (error) throw new Error(error.message)
   revalidatePath('/dashboard/roles')
+  return { id: (data as { id: string }).id }
 }
 
 export async function updateRoleStatusAction(roleId: string, newStatus: string) {

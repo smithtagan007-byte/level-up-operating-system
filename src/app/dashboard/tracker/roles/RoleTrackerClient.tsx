@@ -14,6 +14,8 @@ interface RoleRow {
   // tracker fields
   level: string | null
   location: string | null
+  client_owner_name: string | null
+  delivery_team_names: string[]
   delivery_recruiter_name: string | null
   date_opened: string | null
   days_open: number
@@ -90,7 +92,7 @@ export function RoleTrackerClient({ rows, users }: Props) {
         <table className="min-w-full text-xs whitespace-nowrap">
           <thead>
             <tr className="border-b border-gray-100 bg-gray-50">
-              {['Client', 'Role', 'Level', 'Location', 'Status', 'Recruiter', 'Days Open', 'CVs Sent', 'Potential Rev', 'Weighted', 'Actual Rev', 'Rev. Status', 'Variance', 'Next Action', 'Next Action Date', 'Follow-Up', ''].map(h => (
+              {['Client', 'Role', 'Level', 'Location', 'Status', 'Client Owner', 'Delivery Team', 'Days Open', 'CVs Sent', 'Potential Rev', 'Weighted', 'Actual Rev', 'Rev. Status', 'Variance', 'Next Action', 'Next Action Date', 'Follow-Up', ''].map(h => (
                 <th key={h} className="text-left px-4 py-2.5 font-semibold text-gray-500 uppercase tracking-wide text-xs">{h}</th>
               ))}
             </tr>
@@ -103,7 +105,15 @@ export function RoleTrackerClient({ rows, users }: Props) {
                 <td className="px-4 py-3 text-gray-600">{row.level ?? <span className="text-gray-300">—</span>}</td>
                 <td className="px-4 py-3 text-gray-600">{row.location ?? <span className="text-gray-300">—</span>}</td>
                 <td className="px-4 py-3"><StatusBadge status={row.status} /></td>
-                <td className="px-4 py-3 text-gray-600">{row.delivery_recruiter_name ?? <span className="text-gray-300">—</span>}</td>
+                <td className="px-4 py-3 text-gray-600">
+                  {row.client_owner_name ?? <span className="text-amber-500 text-xs">Unassigned</span>}
+                </td>
+                <td className="px-4 py-3 text-gray-600">
+                  {row.delivery_team_names.length > 0
+                    ? row.delivery_team_names.join(', ')
+                    : <span className="text-gray-300">—</span>
+                  }
+                </td>
                 <td className="px-4 py-3">
                   <span className={`font-semibold ${row.days_open > 30 ? 'text-red-600' : row.days_open > 14 ? 'text-yellow-600' : 'text-gray-700'}`}>
                     {row.days_open}d

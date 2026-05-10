@@ -12,12 +12,20 @@ export default async function ReviewPage({ params }: Props) {
   const { id } = await params
   const supabase = await createClient()
 
+  const { data: { user } } = await supabase.auth.getUser()
+
   const [{ data: candidate }, { data: review }] = await Promise.all([
-    supabase.from('candidates').select('id, full_name').eq('id', id).single(),
+    supabase.from('candidates').select('id, full_name, role_id').eq('id', id).single(),
     supabase.from('candidate_reviews').select('*').eq('candidate_id', id).maybeSingle(),
   ])
 
   if (!candidate) notFound()
+
+  const { data: teamMembership } = candidate.role_id
+    ? await supabase.from('role_team').select('user_id').eq('role_id', candidate.role_id).eq('user_id', user!.id).eq('is_active', true).maybeSingle()
+    : { data: null }
+
+  const isOnTeam = !candidate.role_id || !!teamMembership
 
   return (
     <div className="max-w-2xl">
@@ -33,6 +41,7 @@ export default async function ReviewPage({ params }: Props) {
         candidateId={id}
         candidateName={candidate.full_name}
         existing={review ? review as unknown as Partial<ReviewData> : undefined}
+        isOnTeam={isOnTeam}
       />
     </div>
   )

@@ -37,8 +37,8 @@ export default async function RolesPage({ searchParams }: Props) {
           <p className="text-gray-400 text-sm">No roles yet. Add your first role above.</p>
         </div>
       ) : (
-        <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto">
-          <table className="w-full text-sm">
+        <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto table-container">
+          <table className="min-w-full text-sm">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50">
                 <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Role</th>

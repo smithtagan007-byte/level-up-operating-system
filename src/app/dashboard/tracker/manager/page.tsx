@@ -201,8 +201,8 @@ export default async function ManagerDashboardPage() {
           <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
             Roles — No Activity in 7+ Days ({staleActiveRoles.length})
           </h2>
-          <div className="bg-white border border-amber-100 rounded-xl overflow-x-auto">
-            <table className="w-full text-sm whitespace-nowrap">
+          <div className="bg-white border border-amber-100 rounded-xl overflow-x-auto table-container">
+            <table className="min-w-full text-sm whitespace-nowrap">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50">
                   {['Role', 'Client', 'Recruiter', 'Last Updated', 'Next Action', 'Due'].map(h => (
@@ -257,11 +257,11 @@ export default async function ManagerDashboardPage() {
 
           {/* Hot roles by recruiter */}
           {hotByRecruiterRows.length > 0 && (
-            <div className="bg-white border border-amber-100 rounded-xl overflow-x-auto mb-4">
+            <div className="bg-white border border-amber-100 rounded-xl overflow-x-auto table-container mb-4">
               <div className="px-4 py-3 border-b border-gray-100">
                 <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Hot Roles by Recruiter</h3>
               </div>
-              <table className="w-full text-sm">
+              <table className="min-w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-50 bg-gray-50">
                     {['Recruiter', 'Hot Roles', 'Total Potential'].map(h => (
@@ -284,11 +284,11 @@ export default async function ManagerDashboardPage() {
 
           {/* High-value stale roles */}
           {highValueStaleRevenues.length > 0 && (
-            <div className="bg-white border border-red-100 rounded-xl overflow-x-auto mb-4">
+            <div className="bg-white border border-red-100 rounded-xl overflow-x-auto table-container mb-4">
               <div className="px-4 py-3 border-b border-gray-100">
                 <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">High-Value Roles — Stale (No Activity 7+ Days)</h3>
               </div>
-              <table className="w-full text-sm">
+              <table className="min-w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-50 bg-gray-50">
                     {['Role', 'Recruiter', 'Potential Revenue', 'Status'].map(h => (
@@ -334,8 +334,8 @@ export default async function ManagerDashboardPage() {
           <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
             CVs Pending Internal Review ({(pendingReviews ?? []).length})
           </h2>
-          <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto">
-            <table className="w-full text-sm">
+          <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto table-container">
+            <table className="min-w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50">
                   {['Candidate', 'Role', 'Client', 'Submitted'].map(h => (
@@ -375,8 +375,8 @@ export default async function ManagerDashboardPage() {
           <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
             Approved — Pending Client Submission ({(coApproved ?? []).length})
           </h2>
-          <div className="bg-white border border-amber-100 rounded-xl overflow-x-auto">
-            <table className="w-full text-sm">
+          <div className="bg-white border border-amber-100 rounded-xl overflow-x-auto table-container">
+            <table className="min-w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50">
                   {['Candidate', 'Role', 'Client'].map(h => (
@@ -410,8 +410,8 @@ export default async function ManagerDashboardPage() {
           <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
             CVs Awaiting Client Feedback ({(submittedCandidates ?? []).length})
           </h2>
-          <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto">
-            <table className="w-full text-sm">
+          <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto table-container">
+            <table className="min-w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50">
                   {['Candidate', 'Role', 'Client', 'Submitted'].map(h => (
@@ -448,8 +448,8 @@ export default async function ManagerDashboardPage() {
           <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
             Offers at Risk — High Counteroffer Risk ({(highRiskSubmitted ?? []).length})
           </h2>
-          <div className="bg-white border border-red-100 rounded-xl overflow-x-auto">
-            <table className="w-full text-sm">
+          <div className="bg-white border border-red-100 rounded-xl overflow-x-auto table-container">
+            <table className="min-w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50">
                   {['Candidate', 'Role', 'Client', 'Risk Level'].map(h => (
@@ -487,8 +487,8 @@ export default async function ManagerDashboardPage() {
         <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
           Recruiter KPIs — This Week
         </h2>
-        <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto">
-          <table className="w-full text-sm whitespace-nowrap">
+        <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto table-container">
+          <table className="min-w-full text-sm whitespace-nowrap">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50">
                 {['Recruiter', 'Calls', 'New Clients', 'New Roles', 'CVs', '1st Int.', '2nd Int.', 'Assessments', 'Offers', 'Starts', 'Revenue', 'Submitted'].map(h => (
@@ -554,8 +554,8 @@ export default async function ManagerDashboardPage() {
             <p className="text-sm text-gray-400">No commission entries for {thisCommMonth} yet.</p>
           </div>
         ) : (
-          <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto">
-            <table className="w-full text-sm">
+          <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto table-container">
+            <table className="min-w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50">
                   {['Recruiter', 'Com Earned', 'Com Paid', 'Outstanding'].map(h => (
@@ -597,8 +597,8 @@ export default async function ManagerDashboardPage() {
             </span>
           )}
         </div>
-        <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto">
-          <table className="w-full text-sm whitespace-nowrap">
+        <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto table-container">
+          <table className="min-w-full text-sm whitespace-nowrap">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50">
                 {['Recruiter', 'Submitted', 'Overall Score', 'Manager Reviewed', ''].map(h => (

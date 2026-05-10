@@ -242,8 +242,8 @@ export function CommissionClient({ placements, recruiters, isDirector }: Props) 
           </div>
 
           {/* Table */}
-          <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto">
-            <table className="w-full text-sm whitespace-nowrap">
+          <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto table-container">
+            <table className="min-w-full text-sm whitespace-nowrap">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50">
                   {[
@@ -342,8 +342,8 @@ export function CommissionClient({ placements, recruiters, isDirector }: Props) 
       {/* ── COMMISSION BY RECRUITER TAB ────────────────────────────────────── */}
       {tab === 'recruiters' && (
         <div className="space-y-6">
-          <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto">
-            <table className="w-full text-sm whitespace-nowrap">
+          <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto table-container">
+            <table className="min-w-full text-sm whitespace-nowrap">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50">
                   {[
@@ -422,8 +422,8 @@ export function CommissionClient({ placements, recruiters, isDirector }: Props) 
                 <h3 className="text-sm font-semibold text-gray-700 mb-3">
                   Monthly breakdown — {expandedRecruiter}
                 </h3>
-                <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto">
-                  <table className="w-full text-sm">
+                <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto table-container">
+                  <table className="min-w-full text-sm">
                     <thead>
                       <tr className="border-b border-gray-100 bg-gray-50">
                         {['Month', 'Placements', 'Fees', 'Com Earned', 'Com Paid', 'Outstanding'].map(h => (

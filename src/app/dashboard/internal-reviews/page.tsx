@@ -44,8 +44,8 @@ export default async function InternalReviewsPage() {
           <p className="text-gray-300 text-xs mt-1">Complete a candidate's scorecard and screening, then submit from the candidate page.</p>
         </div>
       ) : (
-        <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto">
-          <table className="w-full text-sm">
+        <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto table-container">
+          <table className="min-w-full text-sm">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50">
                 <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Candidate</th>

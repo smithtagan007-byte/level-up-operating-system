@@ -294,8 +294,8 @@ export default async function DirectorDashboardPage() {
       {monthKeys.length > 0 && (
         <div>
           <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Monthly Revenue Trend</h2>
-          <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto">
-            <table className="w-full text-sm">
+          <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto table-container">
+            <table className="min-w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50">
                   {monthKeys.map(key => (
@@ -335,8 +335,8 @@ export default async function DirectorDashboardPage() {
       {/* Revenue by recruiter */}
       <div>
         <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Revenue by Recruiter ({fyLabel})</h2>
-        <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto">
-          <table className="w-full text-sm whitespace-nowrap">
+        <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto table-container">
+          <table className="min-w-full text-sm whitespace-nowrap">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50">
                 {['Recruiter', 'CVs', 'Offers', 'Starts', 'YTD Revenue', 'Open Forecast', 'Actual (Placed)'].map(h => (
@@ -374,8 +374,8 @@ export default async function DirectorDashboardPage() {
       {clientRows.length > 0 && (
         <div>
           <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Revenue by Client</h2>
-          <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto">
-            <table className="w-full text-sm whitespace-nowrap">
+          <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto table-container">
+            <table className="min-w-full text-sm whitespace-nowrap">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50">
                   {['Client', 'Placements', 'Actual Revenue', 'Open Forecast'].map(h => (
@@ -408,8 +408,8 @@ export default async function DirectorDashboardPage() {
           <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
             Hot Roles — Likely to Close ({hotRoles.length})
           </h2>
-          <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto">
-            <table className="w-full text-sm whitespace-nowrap">
+          <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto table-container">
+            <table className="min-w-full text-sm whitespace-nowrap">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50">
                   {['Role', 'Client', 'Recruiter', 'Status', 'Probability', 'Potential Value', 'Next Action', 'Due'].map(h => (
@@ -462,8 +462,8 @@ export default async function DirectorDashboardPage() {
           <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
             High-Confidence Pipeline — ≥75% ({highConfRevenues.length} roles · {formatZAR(highConfTotal)} potential)
           </h2>
-          <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto">
-            <table className="w-full text-sm whitespace-nowrap">
+          <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto table-container">
+            <table className="min-w-full text-sm whitespace-nowrap">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50">
                   {['Role', 'Client', 'Recruiter', 'Probability', 'Potential Value', 'Weighted Value'].map(h => (

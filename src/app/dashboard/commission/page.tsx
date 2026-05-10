@@ -19,7 +19,10 @@ export default async function CommissionPage() {
     redirect('/dashboard')
   }
 
-  const [{ data: rawPlacements }, { data: rawRecruiters }] = await Promise.all([
+  const [
+    { data: rawPlacements, error: placementsError },
+    { data: rawRecruiters },
+  ] = await Promise.all([
     supabase
       .from('placements')
       .select('*')
@@ -29,6 +32,10 @@ export default async function CommissionPage() {
       .select('id, full_name')
       .order('full_name'),
   ])
+
+  if (placementsError) {
+    console.error('[commission] placements query error:', placementsError.message, placementsError.code)
+  }
 
   const placements = (rawPlacements ?? []) as Placement[]
   const recruiters = (rawRecruiters ?? []) as Recruiter[]

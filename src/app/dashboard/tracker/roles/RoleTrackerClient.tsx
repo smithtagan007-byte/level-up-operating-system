@@ -86,8 +86,8 @@ export function RoleTrackerClient({ rows, users }: Props) {
         />
       )}
 
-      <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto">
-        <table className="w-full text-xs whitespace-nowrap">
+      <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto table-container">
+        <table className="min-w-full text-xs whitespace-nowrap">
           <thead>
             <tr className="border-b border-gray-100 bg-gray-50">
               {['Client', 'Role', 'Level', 'Location', 'Status', 'Recruiter', 'Days Open', 'CVs Sent', 'Potential Rev', 'Weighted', 'Actual Rev', 'Rev. Status', 'Variance', 'Next Action', 'Next Action Date', 'Follow-Up', ''].map(h => (

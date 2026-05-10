@@ -260,8 +260,8 @@ export default async function RecruiterDashboardPage({ searchParams }: Props) {
             <p className="text-sm text-gray-400">No active roles assigned</p>
           </div>
         ) : (
-          <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto">
-            <table className="w-full text-sm whitespace-nowrap">
+          <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto table-container">
+            <table className="min-w-full text-sm whitespace-nowrap">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50">
                   {['Role', 'Client', 'CVs', 'Probability', 'Next Action', 'Due'].map(h => (
@@ -305,8 +305,8 @@ export default async function RecruiterDashboardPage({ searchParams }: Props) {
           <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
             Hot Roles — Likely to Close
           </h2>
-          <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto">
-            <table className="w-full text-sm">
+          <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto table-container">
+            <table className="min-w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50">
                   {['Role', 'Client', 'Probability', 'Expected Value', 'Next Action'].map(h => (
@@ -468,8 +468,8 @@ export default async function RecruiterDashboardPage({ searchParams }: Props) {
           <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
             Open Follow-Ups
           </h2>
-          <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto">
-            <table className="w-full text-sm">
+          <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto table-container">
+            <table className="min-w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50">
                   {['Type', 'Related', 'Due', 'Notes'].map(h => (

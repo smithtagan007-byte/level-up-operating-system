@@ -85,6 +85,36 @@ export default async function ManagerDashboardPage() {
       .select('role_id, delivery_recruiter_id'),
   ])
 
+  // --- Commission data ---
+  const now = new Date()
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  const thisCommMonth = `${monthNames[now.getMonth()]}-${String(now.getFullYear()).slice(2)}`
+
+  const { data: commPlacements } = await supabase
+    .from('placements')
+    .select('staff_name, recruiter_id, commission_earned, commission_paid, payroll_advance, commission_month')
+    .eq('commission_month', thisCommMonth)
+
+  // Group by recruiter for "this month" earned
+  const commByRecruiter: Record<string, { name: string; earned: number; paid: number }> = {}
+  for (const p of commPlacements ?? []) {
+    const key: string = (p.recruiter_id as string | null) ?? (p.staff_name as string | null) ?? 'unknown'
+    const name: string = (p.staff_name as string | null) ?? key
+    if (!commByRecruiter[key]) commByRecruiter[key] = { name, earned: 0, paid: 0 }
+    commByRecruiter[key].earned += Number(p.commission_earned ?? 0)
+    commByRecruiter[key].paid += Number(p.commission_paid ?? 0)
+  }
+  const commRows = Object.values(commByRecruiter).sort((a, b) => b.earned - a.earned)
+
+  // Outstanding across all time
+  const { data: allCommPlacements } = await supabase
+    .from('placements')
+    .select('commission_earned, commission_paid')
+  const totalCommOutstanding = (allCommPlacements ?? []).reduce(
+    (s: number, p: any) => s + Number(p.commission_earned ?? 0) - Number(p.commission_paid ?? 0),
+    0
+  )
+
   // Stale active roles only
   const staleActiveRoles = (staleTrackers ?? []).filter(t => {
     const role = (Array.isArray(t.roles) ? t.roles[0] : t.roles) as { status: string } | null
@@ -502,6 +532,59 @@ export default async function ManagerDashboardPage() {
           </table>
         </div>
       </div>
+      {/* Commission Overview */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+            Commission — {thisCommMonth}
+          </h2>
+          <div className="flex items-center gap-4">
+            {totalCommOutstanding > 0 && (
+              <span className="text-xs font-medium text-red-600">
+                {formatZAR(totalCommOutstanding)} outstanding (all time)
+              </span>
+            )}
+            <Link href="/dashboard/commission" className="text-xs text-gray-400 hover:text-gray-700 transition-colors">
+              Full module →
+            </Link>
+          </div>
+        </div>
+        {commRows.length === 0 ? (
+          <div className="bg-white border border-gray-200 rounded-xl p-5">
+            <p className="text-sm text-gray-400">No commission entries for {thisCommMonth} yet.</p>
+          </div>
+        ) : (
+          <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-100 bg-gray-50">
+                  {['Recruiter', 'Com Earned', 'Com Paid', 'Outstanding'].map(h => (
+                    <th key={h} className="text-left px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {commRows.map(r => {
+                  const os = r.earned - r.paid
+                  return (
+                    <tr key={r.name} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 font-medium text-gray-900">{r.name}</td>
+                      <td className="px-4 py-3 text-gray-900 tabular-nums">{formatZAR(r.earned)}</td>
+                      <td className="px-4 py-3 text-gray-600 tabular-nums">{formatZAR(r.paid)}</td>
+                      <td className={`px-4 py-3 tabular-nums font-medium ${os > 0 ? 'text-red-600' : 'text-gray-300'}`}>
+                        {os > 0 ? formatZAR(os) : '—'}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
       {/* Weekly Self-Reviews */}
       <div>
         <div className="flex items-center justify-between mb-3">

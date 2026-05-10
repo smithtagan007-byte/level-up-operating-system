@@ -15,6 +15,10 @@ const mainNav = [
   { label: 'Settings', href: '/dashboard/settings', icon: '⚙' },
 ]
 
+const financeNav = [
+  { label: 'Commission', href: '/dashboard/commission', minRole: 'talent_manager' as const },
+]
+
 const trackerNav = [
   { label: 'My Dashboard', href: '/dashboard/tracker/recruiter', minRole: null },
   { label: 'Weekly Entry', href: '/dashboard/tracker/weekly', minRole: null },
@@ -65,6 +69,29 @@ export function Sidebar({ userRole = '' }: SidebarProps) {
             {item.label}
           </Link>
         ))}
+
+        {/* Finance section */}
+        {financeNav.some(item => canSeeLink(userRole, item.minRole)) && (
+          <>
+            <div className="pt-4 pb-1">
+              <p className="px-3 text-xs font-semibold uppercase tracking-widest text-gray-600">Finance</p>
+            </div>
+            {financeNav.filter(item => canSeeLink(userRole, item.minRole)).map(item => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
+                  isActive(item.href)
+                    ? 'bg-gray-700 text-white font-medium'
+                    : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                }`}
+              >
+                <span className="text-base leading-none">📈</span>
+                {item.label}
+              </Link>
+            ))}
+          </>
+        )}
 
         {/* Tracker section */}
         <div className="pt-4 pb-1">

@@ -1,0 +1,65 @@
+-- Commission Seed Data
+--
+-- The source file (LU_-_sales_com_tracker CSV) was not found in the repository.
+-- To import historical placements:
+--   1. Use /dashboard/commission/new to enter records manually, or
+--   2. Paste INSERT statements here following the template below.
+--
+-- CSV column → database column mapping:
+--   Staff Name             → staff_name
+--   Client Invoice Date    → client_invoice_date  (YYYY-MM-DD)
+--   Client                 → client
+--   Employee Name          → candidate_name
+--   Role Name              → role_name
+--   Start date             → start_date           (YYYY-MM-DD)
+--   Annual CTC             → annual_ctc            (strip R and commas → numeric)
+--   Placement Fee %        → placement_fee_percentage
+--   Placement Fee          → placement_fee         (strip R and commas → numeric)
+--   Client Pd              → client_paid           (Yes → true, No/blank → false)
+--   Client Inv No          → invoice_number
+--   % Com                  → commission_percentage
+--   Com Earned Amount      → commission_earned     (strip R and commas → numeric)
+--   Com Earned Month       → commission_month      (e.g. "Jan-26")
+--   Payroll Month          → payroll_month
+--   Com Paid               → commission_paid       (strip R and commas → numeric)
+--   TS Earned              → ts_earned
+--   Payroll Com            → payroll_commission
+--   Payroll Advance        → payroll_advance
+--   Advance Paid           → advance_paid
+--   Notes                  → notes
+--
+-- Rules:
+--   - Skip rows where Client Invoice Date is blank
+--   - Skip summary/total rows (rows without a Client value)
+--   - Negative values in brackets e.g. R(4,108) → -4108
+
+-- Template (copy and fill in for each row):
+-- insert into public.placements (
+--   staff_name, client_invoice_date, client, candidate_name, role_name,
+--   start_date, annual_ctc, placement_fee_percentage, placement_fee,
+--   invoice_number, client_paid, commission_percentage, commission_earned,
+--   commission_month, payroll_month, commission_paid, ts_earned,
+--   payroll_commission, payroll_advance, advance_paid, notes
+-- ) values (
+--   'Jane Smith',         -- staff_name
+--   '2025-01-15',         -- client_invoice_date
+--   'Acme Corp',          -- client
+--   'John Doe',           -- candidate_name
+--   'Senior Developer',   -- role_name
+--   '2025-02-01',         -- start_date
+--   850000,               -- annual_ctc
+--   12,                   -- placement_fee_percentage
+--   102000,               -- placement_fee
+--   'LU-2025-001',        -- invoice_number
+--   true,                 -- client_paid
+--   20,                   -- commission_percentage
+--   20400,                -- commission_earned
+--   'Jan-25',             -- commission_month
+--   'Feb-25',             -- payroll_month
+--   20400,                -- commission_paid
+--   0,                    -- ts_earned
+--   0,                    -- payroll_commission
+--   0,                    -- payroll_advance
+--   0,                    -- advance_paid
+--   null                  -- notes
+-- );

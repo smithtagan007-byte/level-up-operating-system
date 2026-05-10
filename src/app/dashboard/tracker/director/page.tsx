@@ -67,6 +67,20 @@ export default async function DirectorDashboardPage() {
   const userMap = Object.fromEntries((users ?? []).map(u => [u.id, u.full_name]))
   const trackerLinkMap = Object.fromEntries((roleTrackerLinks ?? []).map(t => [t.role_id, t]))
 
+  // --- Commission summary ---
+  const { data: commPlacements } = await supabase
+    .from('placements')
+    .select('placement_fee, commission_earned, commission_paid, client_paid, client_invoice_date')
+
+  const commAll = commPlacements ?? []
+  const commYTDInvoiced = commAll
+    .filter((p: any) => p.client_paid && p.client_invoice_date && p.client_invoice_date >= fyStart)
+    .reduce((s: number, p: any) => s + Number(p.placement_fee ?? 0), 0)
+  const commOutstanding = commAll.reduce(
+    (s: number, p: any) => s + Number(p.commission_earned ?? 0) - Number(p.commission_paid ?? 0),
+    0
+  )
+
   // --- Self-review summary (current week) ---
   const recruiterCount = (users ?? []).filter(u => ['talent_specialist', 'talent_manager'].includes(u.role)).length
   const selfReviewSubmitted = (thisWeekSelfReviews ?? []).length
@@ -483,6 +497,32 @@ export default async function DirectorDashboardPage() {
           </div>
         </div>
       )}
+
+      {/* Commission Summary */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Commission Summary</h2>
+          <Link href="/dashboard/commission" className="text-xs text-gray-400 hover:text-gray-700 transition-colors">
+            View full module →
+          </Link>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-white border border-gray-200 rounded-xl p-5">
+            <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-1">YTD Invoiced ({fyLabel})</p>
+            <p className="text-2xl font-bold text-gray-900">{formatZAR(commYTDInvoiced)}</p>
+            <p className="text-xs text-gray-400 mt-1">Client-paid placement fees</p>
+          </div>
+          <div className={`bg-white border rounded-xl p-5 ${commOutstanding > 0 ? 'border-red-200' : 'border-gray-200'}`}>
+            <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-1">Commission Outstanding</p>
+            <p className={`text-2xl font-bold ${commOutstanding > 0 ? 'text-red-600' : 'text-gray-900'}`}>
+              {formatZAR(commOutstanding)}
+            </p>
+            <p className="text-xs text-gray-400 mt-1">
+              {commOutstanding > 0 ? 'Earned but not yet paid' : 'All commission settled'}
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

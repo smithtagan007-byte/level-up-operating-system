@@ -81,6 +81,18 @@ export default async function DirectorDashboardPage() {
     0
   )
 
+  // Monthly revenue from placements (real invoice data, last 6 months of FY)
+  const placementMonthly: Record<string, number> = {}
+  for (const p of commAll) {
+    if (!p.client_invoice_date) continue
+    const monthKey = (p.client_invoice_date as string).slice(0, 7) // YYYY-MM
+    placementMonthly[monthKey] = (placementMonthly[monthKey] ?? 0) + Number(p.placement_fee ?? 0)
+  }
+  const placementMonthKeys = Object.keys(placementMonthly).sort().slice(-6)
+  const placementMaxVal = placementMonthKeys.length > 0
+    ? Math.max(...placementMonthKeys.map(k => placementMonthly[k]))
+    : 0
+
   // --- Self-review summary (current week) ---
   const recruiterCount = (users ?? []).filter(u => ['talent_specialist', 'talent_manager'].includes(u.role)).length
   const selfReviewSubmitted = (thisWeekSelfReviews ?? []).length
@@ -290,47 +302,64 @@ export default async function DirectorDashboardPage() {
         </div>
       )}
 
-      {/* Month-on-month revenue trend */}
-      {monthKeys.length > 0 && (
-        <div>
-          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Monthly Revenue Trend</h2>
-          <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto table-container">
-            <table className="min-w-full text-sm">
-              <thead>
-                <tr className="border-b border-gray-100 bg-gray-50">
-                  {monthKeys.map(key => (
-                    <th key={key} className="px-4 py-2.5 text-center text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                      {new Date(key + '-01').toLocaleDateString('en-GB', { month: 'short', year: '2-digit' })}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  {monthKeys.map(key => {
-                    const val = monthlyRevenue[key] ?? 0
-                    const prevKey = monthKeys[monthKeys.indexOf(key) - 1]
-                    const prevVal = prevKey ? (monthlyRevenue[prevKey] ?? 0) : null
-                    const trend = prevVal !== null ? (val > prevVal ? 'up' : val < prevVal ? 'down' : 'flat') : null
-                    return (
-                      <td key={key} className="px-4 py-4 text-center">
-                        <span className={`text-sm font-bold ${val > 0 ? 'text-emerald-600' : 'text-gray-300'}`}>
-                          {val > 0 ? formatZAR(val) : '—'}
+      {/* Monthly revenue trend (from placements) */}
+      <div>
+        <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Monthly Revenue Trend</h2>
+        <div className="bg-white border border-gray-200 rounded-xl p-6">
+          {placementMonthKeys.length === 0 ? (
+            <p className="text-sm text-gray-400 text-center py-4">No placement revenue recorded yet.</p>
+          ) : (
+            <>
+              {/* Bars */}
+              <div className="flex items-end gap-3 mb-3" style={{ height: 80 }}>
+                {placementMonthKeys.map(key => {
+                  const val = placementMonthly[key]
+                  const barH = placementMaxVal > 0
+                    ? Math.max(Math.round((val / placementMaxVal) * 80), 3)
+                    : 3
+                  const prevKey = placementMonthKeys[placementMonthKeys.indexOf(key) - 1]
+                  const prevVal = prevKey ? (placementMonthly[prevKey] ?? 0) : null
+                  const trend = prevVal !== null ? (val > prevVal ? 'up' : val < prevVal ? 'down' : 'flat') : null
+                  return (
+                    <div key={key} className="flex-1 flex flex-col items-center justify-end group">
+                      {trend && (
+                        <span className={`text-xs mb-1 opacity-0 group-hover:opacity-100 transition-opacity ${
+                          trend === 'up' ? 'text-emerald-500' : trend === 'down' ? 'text-red-400' : 'text-gray-400'
+                        }`}>
+                          {trend === 'up' ? '↑' : trend === 'down' ? '↓' : '→'}
                         </span>
-                        {trend && val > 0 && (
-                          <span className={`ml-1 text-xs ${trend === 'up' ? 'text-emerald-500' : trend === 'down' ? 'text-red-500' : 'text-gray-400'}`}>
-                            {trend === 'up' ? '↑' : trend === 'down' ? '↓' : '→'}
-                          </span>
-                        )}
-                      </td>
-                    )
-                  })}
-                </tr>
-              </tbody>
-            </table>
-          </div>
+                      )}
+                      <div
+                        className="w-full rounded-t-sm bg-emerald-500 hover:bg-emerald-400 transition-colors"
+                        style={{ height: barH }}
+                        title={formatZAR(val)}
+                      />
+                    </div>
+                  )
+                })}
+              </div>
+              {/* Values */}
+              <div className="flex gap-3 mb-1">
+                {placementMonthKeys.map(key => (
+                  <div key={key} className="flex-1 text-center">
+                    <span className="text-xs font-semibold text-gray-800">{formatZAR(placementMonthly[key])}</span>
+                  </div>
+                ))}
+              </div>
+              {/* Month labels */}
+              <div className="flex gap-3">
+                {placementMonthKeys.map(key => (
+                  <div key={key} className="flex-1 text-center">
+                    <span className="text-xs text-gray-400">
+                      {new Date(key + '-01').toLocaleDateString('en-GB', { month: 'short', year: '2-digit' })}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
-      )}
+      </div>
 
       {/* Revenue by recruiter */}
       <div>

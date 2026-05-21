@@ -15,6 +15,7 @@ interface TrackerData {
   next_action?: string
   next_action_date?: string
   follow_up_status?: string
+  blocker?: string
 }
 
 interface Props {
@@ -51,6 +52,7 @@ export function EditRoleModal({ roleId, roleTitle, clientName, existing, users, 
         next_action: data.next_action || null,
         next_action_date: data.next_action_date || null,
         follow_up_status: data.follow_up_status || 'none',
+        blocker: data.blocker || null,
       }
       await upsertRoleTrackerAction(roleId, fields)
       onClose()
@@ -142,6 +144,17 @@ export function EditRoleModal({ roleId, roleTitle, clientName, existing, users, 
                 <option value="overdue">Overdue</option>
               </select>
             </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">Blocker</label>
+            <input
+              value={data.blocker ?? ''}
+              onChange={e => set('blocker', e.target.value)}
+              placeholder="e.g. Awaiting client sign-off on spec"
+              className={inputClass}
+            />
+            <p className="text-xs text-gray-400 mt-1">What is currently preventing progress on this role?</p>
           </div>
 
           {error && <p className="text-sm text-red-600">{error}</p>}

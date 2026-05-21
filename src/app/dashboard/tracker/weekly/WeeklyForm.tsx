@@ -124,59 +124,17 @@ export function WeeklyForm({ userId, weeks, initialWeek, existingByWeek, autoCvs
         {/* Business Development */}
         <div className="bg-white border border-gray-200 rounded-xl p-5">
           <h3 className="text-sm font-semibold text-gray-900 mb-4">Business Development</h3>
-          <div className="space-y-3">
+          <div className="space-y-4">
             {([
-              ['newClients', 'New Clients'],
-              ['signedTerms', 'Signed Terms'],
-              ['newRoles', 'New Roles'],
-              ['callsMade', 'Calls Made'],
-              ['followUps', 'Follow-Ups'],
-            ] as [keyof ExistingData, string][]).map(([key, label]) => (
-              <div key={key} className="flex items-center justify-between gap-3">
-                <label className="text-sm text-gray-700 whitespace-nowrap">{label}</label>
-                <input
-                  type="number"
-                  min="0"
-                  value={fields[key] || ''}
-                  onChange={e => setField(key, e.target.value === '' ? 0 : Number(e.target.value))}
-                  placeholder="0"
-                  className={`${inputClass} w-28`}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Delivery */}
-        <div className="bg-white border border-gray-200 rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-gray-900 mb-4">Delivery</h3>
-          <div className="space-y-3">
-            {([
-              ['cvs', 'CVs Submitted'],
-              ['cvsDeclined', 'CVs Declined'],
-              ['firstInterviews', 'First Interviews'],
-              ['secondInterviews', 'Second Interviews'],
-              ['assessments', 'Assessments'],
-              ['declines', 'Declines'],
-              ['offers', 'Offers'],
-              ['offersDeclined', 'Offers Declined'],
-              ['starts', 'Starts'],
-            ] as [keyof ExistingData, string][]).map(([key, label]) => (
-              <div key={key} className="flex items-center justify-between gap-3">
-                <label className="text-sm text-gray-700 whitespace-nowrap">{label}</label>
-                {key === 'cvs' && autoCvs > 0 ? (
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-blue-500">{autoCvs} auto</span>
-                    <input
-                      type="number"
-                      min="0"
-                      value={fields[key] || ''}
-                      onChange={e => setField(key, e.target.value === '' ? 0 : Number(e.target.value))}
-                      placeholder="0"
-                      className={`${inputClass} w-28`}
-                    />
-                  </div>
-                ) : (
+              ['newClients', 'New Clients', 'First-time contact or re-engaged prospect this week'],
+              ['signedTerms', 'Signed Terms', 'New clients who signed a terms of business agreement'],
+              ['newRoles', 'New Roles', 'New vacancies taken on this week'],
+              ['callsMade', 'New BD Calls', 'Outbound calls to prospects or clients not recently contacted'],
+              ['followUps', 'Dormant Client Follow-Ups', 'Follow-ups with clients who went quiet — not active pipeline'],
+            ] as [keyof ExistingData, string, string][]).map(([key, label, hint]) => (
+              <div key={key}>
+                <div className="flex items-center justify-between gap-3">
+                  <label className="text-sm text-gray-700 whitespace-nowrap">{label}</label>
                   <input
                     type="number"
                     min="0"
@@ -185,7 +143,55 @@ export function WeeklyForm({ userId, weeks, initialWeek, existingByWeek, autoCvs
                     placeholder="0"
                     className={`${inputClass} w-28`}
                   />
-                )}
+                </div>
+                <p className="text-xs text-gray-400 mt-1">{hint}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Delivery */}
+        <div className="bg-white border border-gray-200 rounded-xl p-5">
+          <h3 className="text-sm font-semibold text-gray-900 mb-4">Delivery</h3>
+          <div className="space-y-4">
+            {([
+              ['cvs', 'CVs Submitted', 'Formatted CVs sent to a client this week'],
+              ['cvsDeclined', 'CVs Declined', 'CVs rejected by the client after submission'],
+              ['firstInterviews', 'First Interviews', 'Candidates who attended a first-stage interview'],
+              ['secondInterviews', 'Second Interviews', 'Candidates who progressed to a second stage'],
+              ['assessments', 'Assessments', 'Technical tests, case studies, or formal assessments completed'],
+              ['declines', 'Candidate Declines', 'Candidates who withdrew or declined after an interview'],
+              ['offers', 'Offers Made', 'Formal offers extended to candidates this week'],
+              ['offersDeclined', 'Offers Declined', 'Offers that were turned down by the candidate'],
+              ['starts', 'Starts', 'Candidates who began their new role this week'],
+            ] as [keyof ExistingData, string, string][]).map(([key, label, hint]) => (
+              <div key={key}>
+                <div className="flex items-center justify-between gap-3">
+                  <label className="text-sm text-gray-700 whitespace-nowrap">{label}</label>
+                  {key === 'cvs' && autoCvs > 0 ? (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-blue-500">{autoCvs} auto</span>
+                      <input
+                        type="number"
+                        min="0"
+                        value={fields[key] || ''}
+                        onChange={e => setField(key, e.target.value === '' ? 0 : Number(e.target.value))}
+                        placeholder="0"
+                        className={`${inputClass} w-28`}
+                      />
+                    </div>
+                  ) : (
+                    <input
+                      type="number"
+                      min="0"
+                      value={fields[key] || ''}
+                      onChange={e => setField(key, e.target.value === '' ? 0 : Number(e.target.value))}
+                      placeholder="0"
+                      className={`${inputClass} w-28`}
+                    />
+                  )}
+                </div>
+                <p className="text-xs text-gray-400 mt-1">{hint}</p>
               </div>
             ))}
           </div>

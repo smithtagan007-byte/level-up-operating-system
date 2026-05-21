@@ -20,7 +20,6 @@ const financeNav = [
 ]
 
 const trackerNav = [
-  { label: 'My Dashboard', href: '/dashboard/tracker/recruiter', minRole: null },
   { label: 'Weekly Entry', href: '/dashboard/tracker/weekly', minRole: null },
   { label: 'Self-Review', href: '/dashboard/recruiter/self-review', minRole: null },
   { label: 'Role Tracker', href: '/dashboard/tracker/roles', minRole: null },

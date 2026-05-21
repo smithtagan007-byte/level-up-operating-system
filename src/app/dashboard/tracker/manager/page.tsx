@@ -36,6 +36,7 @@ export default async function ManagerDashboardPage() {
     { data: selfReviews },
     { data: roleRevenues },
     { data: roleTrackerLinks },
+    { data: overdueFollowUpsAll },
   ] = await Promise.all([
     supabase.from('user_profiles')
       .select('id, full_name, role')
@@ -83,6 +84,12 @@ export default async function ManagerDashboardPage() {
 
     supabase.from('role_tracker')
       .select('role_id, delivery_recruiter_id'),
+
+    supabase.from('follow_ups')
+      .select('id, owner_id, follow_up_type, due_date, related_type, status')
+      .eq('status', 'pending')
+      .lt('due_date', new Date().toISOString().slice(0, 10))
+      .order('due_date', { ascending: true }),
   ])
 
   // --- Commission data ---
@@ -170,6 +177,26 @@ export default async function ManagerDashboardPage() {
   // Self-review map by user_id
   const selfReviewMap = Object.fromEntries((selfReviews ?? []).map(r => [r.user_id, r]))
   const selfReviewsAwaitingManagerReview = (selfReviews ?? []).filter(r => !r.reviewed)
+
+  // Overdue follow-ups grouped by owner
+  interface OverdueByRecruiter { recruiterId: string; recruiterName: string; count: number; oldest: string }
+  const overdueByRecruiter: Record<string, OverdueByRecruiter> = {}
+  for (const f of overdueFollowUpsAll ?? []) {
+    const oid = f.owner_id as string
+    if (!overdueByRecruiter[oid]) {
+      overdueByRecruiter[oid] = {
+        recruiterId: oid,
+        recruiterName: userNameMap[oid] ?? 'Unknown',
+        count: 0,
+        oldest: f.due_date as string,
+      }
+    }
+    overdueByRecruiter[oid].count += 1
+    if ((f.due_date as string) < overdueByRecruiter[oid].oldest) {
+      overdueByRecruiter[oid].oldest = f.due_date as string
+    }
+  }
+  const overdueByRecruiterRows = Object.values(overdueByRecruiter).sort((a, b) => b.count - a.count)
 
   return (
     <div className="space-y-8">
@@ -532,6 +559,45 @@ export default async function ManagerDashboardPage() {
           </table>
         </div>
       </div>
+      {/* Overdue Follow-Ups by Recruiter */}
+      {overdueByRecruiterRows.length > 0 && (
+        <div>
+          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
+            Overdue Follow-Ups by Recruiter ({(overdueFollowUpsAll ?? []).length} total)
+          </h2>
+          <div className="bg-white border border-red-100 rounded-xl overflow-x-auto table-container">
+            <table className="min-w-full text-sm whitespace-nowrap">
+              <thead>
+                <tr className="border-b border-gray-100 bg-gray-50">
+                  {['Recruiter', 'Overdue Count', 'Oldest Due Date', ''].map(h => (
+                    <th key={h} className="text-left px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {overdueByRecruiterRows.map(r => (
+                  <tr key={r.recruiterId} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 font-medium text-gray-900">{r.recruiterName}</td>
+                    <td className="px-4 py-3 text-red-600 font-semibold">{r.count}</td>
+                    <td className="px-4 py-3 text-red-600 text-xs">
+                      {new Date(r.oldest).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <Link
+                        href={`/dashboard/tracker/recruiter?userId=${r.recruiterId}`}
+                        className="text-xs text-gray-400 hover:text-gray-900 font-medium transition-colors"
+                      >
+                        View dashboard →
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
       {/* Commission Overview */}
       <div>
         <div className="flex items-center justify-between mb-3">

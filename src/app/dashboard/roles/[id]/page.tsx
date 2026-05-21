@@ -1,8 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { StatusBadge } from '@/components/ui/StatusBadge'
+import { stageAgeInfo } from '@/lib/stageAge'
 import { RoleActions } from './RoleActions'
 import { RoleRevenueSection } from './RoleRevenueSection'
 import { TeamSection } from './TeamSection'
+import { RoleCandidatesSection } from './RoleCandidatesSection'
 import type { TeamMember } from './TeamSection'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
@@ -22,7 +24,7 @@ export default async function RoleDetailPage({ params, searchParams }: Props) {
   const [{ data: role }, { data: roleRevenue }, { data: profile }, { data: teamRows }, { data: allUsers }] = await Promise.all([
     supabase
       .from('roles')
-      .select('id, title, status, intake_completed, client_id, clients(id, name)')
+      .select('id, title, status, intake_completed, client_id, entered_stage_at, clients(id, name)')
       .eq('id', id)
       .single(),
     supabase
@@ -37,7 +39,7 @@ export default async function RoleDetailPage({ params, searchParams }: Props) {
       .single(),
     supabase
       .from('role_team')
-      .select('user_id, role_on_role, user_profiles(full_name)')
+      .select('user_id, role_on_role')
       .eq('role_id', id)
       .eq('is_active', true),
     supabase
@@ -51,14 +53,12 @@ export default async function RoleDetailPage({ params, searchParams }: Props) {
   const client = (Array.isArray(role.clients) ? role.clients[0] : role.clients) as { id: string; name: string } | null
   const isManager = ['talent_manager', 'director'].includes(profile?.role ?? '')
 
-  const team: TeamMember[] = (teamRows ?? []).map(row => {
-    const up = Array.isArray(row.user_profiles) ? row.user_profiles[0] : row.user_profiles
-    return {
-      user_id: row.user_id,
-      role_on_role: row.role_on_role as 'client_owner' | 'delivery_specialist',
-      full_name: (up as { full_name: string } | null)?.full_name ?? 'Unknown',
-    }
-  })
+  const userNameMap = Object.fromEntries((allUsers ?? []).map(u => [u.id, u.full_name]))
+  const team: TeamMember[] = (teamRows ?? []).map(row => ({
+    user_id: row.user_id,
+    role_on_role: row.role_on_role as 'client_owner' | 'delivery_specialist',
+    full_name: userNameMap[row.user_id] ?? 'Unknown',
+  }))
 
   return (
     <div className="max-w-3xl">
@@ -78,37 +78,27 @@ export default async function RoleDetailPage({ params, searchParams }: Props) {
               </Link>
             )}
           </div>
-          <StatusBadge status={role.status} />
+          <div className="flex flex-col items-end gap-1">
+            <StatusBadge status={role.status} />
+            {(() => {
+              const age = stageAgeInfo(role.status, (role as { entered_stage_at?: string | null }).entered_stage_at)
+              if (!age) return null
+              return (
+                <span className={`text-xs font-medium ${
+                  age.color === 'red' ? 'text-red-600' :
+                  age.color === 'amber' ? 'text-amber-600' :
+                  'text-gray-400'
+                }`}>
+                  {age.days === 0 ? 'Entered today' : `${age.days}d in stage`}
+                </span>
+              )
+            })()}
+          </div>
         </div>
       </div>
 
       <div className="space-y-4">
-        <div className="bg-white border border-gray-200 rounded-xl p-5">
-          <dl className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <dt className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">Status</dt>
-              <dd><StatusBadge status={role.status} /></dd>
-            </div>
-            <div>
-              <dt className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">Intake</dt>
-              <dd>
-                {role.intake_completed
-                  ? <span className="text-emerald-600 text-sm font-medium">Complete</span>
-                  : <span className="text-yellow-600 text-sm font-medium">Pending</span>
-                }
-              </dd>
-            </div>
-          </dl>
-        </div>
-
-        <TeamSection
-          roleId={role.id}
-          team={team}
-          users={allUsers ?? []}
-          isManager={isManager}
-          defaultOpen={assignTeam === '1'}
-        />
-
+        {/* 1. Stage Management */}
         <div className="bg-white border border-gray-200 rounded-xl p-5">
           <h2 className="text-sm font-semibold text-gray-900 mb-4">Stage Management</h2>
           <RoleActions
@@ -118,6 +108,45 @@ export default async function RoleDetailPage({ params, searchParams }: Props) {
           />
         </div>
 
+        {/* 2. Candidates */}
+        <RoleCandidatesSection
+          roleId={role.id}
+          roleTitle={role.title}
+          clientName={client?.name ?? null}
+        />
+
+        {/* 3. Role Intake */}
+        <div className="bg-white border border-gray-200 rounded-xl p-5">
+          <div className="flex items-start justify-between">
+            <div>
+              <h2 className="text-sm font-semibold text-gray-900">Role Intake</h2>
+              <p className="text-xs text-gray-500 mt-0.5">Level, location, compensation, requirements &amp; brief</p>
+            </div>
+            {role.intake_completed
+              ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">Complete</span>
+              : <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Pending</span>
+            }
+          </div>
+          <div className="mt-4">
+            <Link
+              href={`/dashboard/roles/${role.id}/intake`}
+              className="block text-center text-sm font-medium text-gray-700 border border-gray-200 rounded-lg py-2 hover:bg-gray-50 transition-colors"
+            >
+              {role.intake_completed ? 'View Intake Form' : 'Complete Intake Form →'}
+            </Link>
+          </div>
+        </div>
+
+        {/* 4. Team */}
+        <TeamSection
+          roleId={role.id}
+          team={team}
+          users={allUsers ?? []}
+          isManager={isManager}
+          defaultOpen={assignTeam === '1'}
+        />
+
+        {/* 5. Revenue */}
         <RoleRevenueSection roleId={role.id} existing={roleRevenue ?? null} />
       </div>
     </div>

@@ -38,7 +38,7 @@ export async function updateRoleStatusAction(roleId: string, newStatus: string) 
 
   const { error } = await supabase
     .from('roles')
-    .update({ status: newStatus })
+    .update({ status: newStatus, entered_stage_at: new Date().toISOString() })
     .eq('id', roleId)
 
   if (error) throw new Error(error.message)

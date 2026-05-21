@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { AddRoleModal } from './AddRoleModal'
+import { stageAgeInfo } from '@/lib/stageAge'
 import Link from 'next/link'
 
 interface Props {
@@ -11,10 +12,10 @@ export default async function RolesPage({ searchParams }: Props) {
   const { client: preselectedClientId } = await searchParams
   const supabase = await createClient()
 
-  const [{ data: roles }, { data: clients }, { data: teamRows }] = await Promise.all([
+  const [{ data: roles }, { data: clients }, { data: teamRows }, { data: allUsers }] = await Promise.all([
     supabase
       .from('roles')
-      .select('id, title, status, intake_completed, clients(name)')
+      .select('id, title, status, intake_completed, entered_stage_at, clients(name)')
       .order('created_at', { ascending: false }),
     supabase
       .from('clients')
@@ -22,17 +23,20 @@ export default async function RolesPage({ searchParams }: Props) {
       .order('name'),
     supabase
       .from('role_team')
-      .select('role_id, user_id, role_on_role, user_profiles(full_name)')
+      .select('role_id, user_id, role_on_role')
       .eq('is_active', true),
+    supabase
+      .from('user_profiles')
+      .select('id, full_name'),
   ])
 
   // Build a map: role_id → { clientOwner, specialistCount }
+  const userNameMap = Object.fromEntries((allUsers ?? []).map(u => [u.id, u.full_name]))
   type TeamInfo = { clientOwnerName: string | null; specialistCount: number }
   const teamMap: Record<string, TeamInfo> = {}
   for (const row of teamRows ?? []) {
     if (!teamMap[row.role_id]) teamMap[row.role_id] = { clientOwnerName: null, specialistCount: 0 }
-    const up = Array.isArray(row.user_profiles) ? row.user_profiles[0] : row.user_profiles
-    const name = (up as { full_name: string } | null)?.full_name ?? null
+    const name = userNameMap[row.user_id] ?? null
     if (row.role_on_role === 'client_owner') {
       teamMap[row.role_id].clientOwnerName = name
     } else {
@@ -64,6 +68,7 @@ export default async function RolesPage({ searchParams }: Props) {
                 <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Client Owner</th>
                 <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Team</th>
                 <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Age</th>
                 <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Intake</th>
                 <th className="px-5 py-3" />
               </tr>
@@ -89,6 +94,21 @@ export default async function RolesPage({ searchParams }: Props) {
                       }
                     </td>
                     <td className="px-5 py-4"><StatusBadge status={role.status} /></td>
+                    <td className="px-5 py-4">
+                      {(() => {
+                        const age = stageAgeInfo(role.status, (role as { entered_stage_at?: string | null }).entered_stage_at)
+                        if (!age) return <span className="text-gray-300 text-xs">—</span>
+                        return (
+                          <span className={`text-xs font-semibold ${
+                            age.color === 'red' ? 'text-red-600' :
+                            age.color === 'amber' ? 'text-amber-600' :
+                            'text-gray-400'
+                          }`}>
+                            {age.label}
+                          </span>
+                        )
+                      })()}
+                    </td>
                     <td className="px-5 py-4">
                       {role.intake_completed
                         ? <span className="text-emerald-600 text-xs font-medium">Complete</span>

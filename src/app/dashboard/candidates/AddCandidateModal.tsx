@@ -72,20 +72,48 @@ export function AddCandidateModal({ roles }: AddCandidateModalProps) {
                 />
               </div>
 
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Current Title</label>
+                  <input
+                    name="current_title"
+                    placeholder="e.g. Senior Engineer"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Current Company</label>
+                  <input
+                    name="current_company"
+                    placeholder="e.g. Acme Corp"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                  />
+                </div>
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Role <span className="text-red-500">*</span></label>
-                <select
-                  name="role_id"
-                  required
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 bg-white"
-                >
-                  <option value="">Select role</option>
-                  {roles.map((r) => (
-                    <option key={r.id} value={r.id}>
-                      {r.title}{r.clients ? ` — ${r.clients.name}` : ''}
-                    </option>
-                  ))}
-                </select>
+                {roles.length === 1 ? (
+                  <>
+                    <input type="hidden" name="role_id" value={roles[0].id} />
+                    <p className="text-sm text-gray-700 border border-gray-100 rounded-lg px-3 py-2 bg-gray-50">
+                      {roles[0].title}{roles[0].clients ? ` — ${roles[0].clients.name}` : ''}
+                    </p>
+                  </>
+                ) : (
+                  <select
+                    name="role_id"
+                    required
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 bg-white"
+                  >
+                    <option value="">Select role</option>
+                    {roles.map((r) => (
+                      <option key={r.id} value={r.id}>
+                        {r.title}{r.clients ? ` — ${r.clients.name}` : ''}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
 
               {error && <p className="text-sm text-red-600">{error}</p>}

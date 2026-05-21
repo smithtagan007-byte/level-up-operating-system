@@ -44,4 +44,6 @@ export async function markFollowUpCompleteAction(followUpId: string) {
 
   if (error) throw new Error(error.message)
   revalidatePath('/dashboard/tracker/follow-ups')
+  revalidatePath('/dashboard/tracker/recruiter')
+  revalidatePath('/dashboard/tracker/manager')
 }

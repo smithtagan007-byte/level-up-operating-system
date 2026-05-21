@@ -40,5 +40,7 @@ export interface Candidate {
   client_owner_approved: boolean
   talent_manager_approved: boolean
   submitted_to_client: boolean
+  current_company: string | null
+  current_title: string | null
   created_at: string
 }

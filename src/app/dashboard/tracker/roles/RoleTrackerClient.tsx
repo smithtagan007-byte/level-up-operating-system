@@ -20,6 +20,8 @@ interface RoleRow {
   date_opened: string | null
   days_open: number
   cvs_submitted: number
+  cv_pending: number
+  blocker: string | null
   // legacy tracker revenue (for EditRoleModal)
   expected_revenue: number | null
   actual_revenue: number | null
@@ -82,6 +84,7 @@ export function RoleTrackerClient({ rows, users }: Props) {
             next_action: editingRow.next_action ?? undefined,
             next_action_date: editingRow.next_action_date ?? undefined,
             follow_up_status: editingRow.follow_up_status,
+            blocker: editingRow.blocker ?? undefined,
           }}
           users={users}
           onClose={() => setEditingId(null)}
@@ -92,7 +95,7 @@ export function RoleTrackerClient({ rows, users }: Props) {
         <table className="min-w-full text-xs whitespace-nowrap">
           <thead>
             <tr className="border-b border-gray-100 bg-gray-50">
-              {['Client', 'Role', 'Level', 'Location', 'Status', 'Client Owner', 'Delivery Team', 'Days Open', 'CVs Sent', 'Potential Rev', 'Weighted', 'Actual Rev', 'Rev. Status', 'Variance', 'Next Action', 'Next Action Date', 'Follow-Up', ''].map(h => (
+              {['Client', 'Role', 'Level', 'Location', 'Status', 'Client Owner', 'Delivery Team', 'Days Open', 'CVs Sent', 'Awaiting Feedback', 'Potential Rev', 'Weighted', 'Actual Rev', 'Rev. Status', 'Variance', 'Next Action', 'Next Action Date', 'Follow-Up', 'Blocker', ''].map(h => (
                 <th key={h} className="text-left px-4 py-2.5 font-semibold text-gray-500 uppercase tracking-wide text-xs">{h}</th>
               ))}
             </tr>
@@ -120,6 +123,12 @@ export function RoleTrackerClient({ rows, users }: Props) {
                   </span>
                 </td>
                 <td className="px-4 py-3 font-semibold text-gray-900">{row.cvs_submitted}</td>
+                <td className="px-4 py-3">
+                  {row.cv_pending > 0
+                    ? <span className="font-semibold text-amber-600">{row.cv_pending}</span>
+                    : <span className="text-gray-300">—</span>
+                  }
+                </td>
                 <td className="px-4 py-3 text-gray-600">
                   {row.potential_revenue != null ? formatZAR(row.potential_revenue) : <span className="text-gray-300">—</span>}
                 </td>
@@ -155,6 +164,12 @@ export function RoleTrackerClient({ rows, users }: Props) {
                   <span className={`font-medium capitalize ${fuStyles[row.follow_up_status] ?? 'text-gray-300'}`}>
                     {row.follow_up_status === 'none' ? '—' : row.follow_up_status}
                   </span>
+                </td>
+                <td className="px-4 py-3 max-w-36 truncate">
+                  {row.blocker
+                    ? <span className="text-red-600 font-medium" title={row.blocker}>{row.blocker}</span>
+                    : <span className="text-gray-300">—</span>
+                  }
                 </td>
                 <td className="px-4 py-3 text-right">
                   <button onClick={() => setEditingId(row.role_id)} className="text-xs font-medium text-gray-400 hover:text-gray-900 transition-colors">

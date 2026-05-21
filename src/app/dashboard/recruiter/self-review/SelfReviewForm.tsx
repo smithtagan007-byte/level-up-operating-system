@@ -44,7 +44,7 @@ const REFLECTIONS = [
   { key: 'whatWentWell' as const, label: 'What went well this week?' },
   { key: 'whatDidNotGoWell' as const, label: 'What did not go well this week?' },
   { key: 'hotRoles' as const, label: 'Which roles are currently hot?' },
-  { key: 'pendingFeedbackOrBlockers' as const, label: 'Where are you pending feedback or blocked?' },
+  { key: 'pendingFeedbackOrBlockers' as const, label: 'Where are you currently blocked?' },
   { key: 'nextWeekPriorities' as const, label: 'What are your priorities next week?' },
 ]
 
@@ -266,7 +266,7 @@ export function SelfReviewForm({ userId, weekStart, weeks, existing, userRole, i
       {error && <p className="text-sm text-red-600">{error}</p>}
 
       {/* Manager section */}
-      {(isManager || (existing?.manager_comments)) && (
+      {(isManager || existing?.reviewed || !!existing?.manager_comments) && (
         <div className="bg-white border border-gray-200 rounded-xl p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-semibold text-gray-900">Manager Review</h2>
@@ -322,15 +322,19 @@ export function SelfReviewForm({ userId, weekStart, weeks, existing, userRole, i
               )}
             </div>
           ) : (
-            // Recruiter reading manager comments (read-only)
-            existing?.manager_comments && (
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1.5">Manager Comments</label>
-                <p className="text-sm text-gray-700 bg-gray-50 rounded-lg px-3 py-2.5 leading-relaxed">
-                  {existing.manager_comments}
-                </p>
-              </div>
-            )
+            // Recruiter reading manager feedback (read-only)
+            <div>
+              {existing?.manager_comments ? (
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1.5">Manager Comments</label>
+                  <p className="text-sm text-gray-700 bg-gray-50 rounded-lg px-3 py-2.5 leading-relaxed">
+                    {existing.manager_comments}
+                  </p>
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500">Your manager has reviewed this week but left no written comments.</p>
+              )}
+            </div>
           )}
         </div>
       )}

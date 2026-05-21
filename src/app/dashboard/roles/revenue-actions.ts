@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { createFollowUpIfNotExists, toDateString } from '@/lib/follow-ups'
 
 export interface RevenuePayload {
   feeType: 'percentage' | 'fixed'
@@ -72,6 +73,34 @@ export async function upsertRoleRevenueAction(roleId: string, payload: RevenuePa
     )
 
   if (error) throw new Error(error.message)
+
+  // Auto follow-up: when a role is marked Placed, schedule an offer follow-up for the client owner
+  if (payload.revenueStatus === 'Placed') {
+    const { data: role } = await supabase
+      .from('roles')
+      .select('client_id')
+      .eq('id', roleId)
+      .maybeSingle()
+
+    if (role?.client_id) {
+      const { data: client } = await supabase
+        .from('clients')
+        .select('owner_id')
+        .eq('id', role.client_id)
+        .maybeSingle()
+
+      if (client?.owner_id) {
+        await createFollowUpIfNotExists(supabase, {
+          relatedType: 'role',
+          relatedId: roleId,
+          roleId,
+          ownerId: client.owner_id,
+          followUpType: 'Offer Follow-Up',
+          dueDate: toDateString(new Date()),
+        })
+      }
+    }
+  }
 
   revalidatePath(`/dashboard/roles/${roleId}`)
   revalidatePath('/dashboard/tracker/roles')

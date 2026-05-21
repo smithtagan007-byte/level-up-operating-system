@@ -2,8 +2,11 @@ import { createClient } from '@/lib/supabase/server'
 import { ClientGradeBadge } from '@/components/ui/ClientGradeBadge'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { AssignOwnerSelect } from './AssignOwnerSelect'
+import { ClientProfileSection } from './ClientProfileSection'
+import { ClientContactsSection } from './ClientContactsSection'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import type { ClientProfileData } from '../actions'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -13,10 +16,16 @@ export default async function ClientDetailPage({ params }: Props) {
   const { id } = await params
   const supabase = await createClient()
 
-  const [{ data: client }, { data: roles }, { data: clientOwners }] = await Promise.all([
+  const [{ data: client }, { data: roles }, { data: clientOwners }, { data: contacts }] = await Promise.all([
     supabase
       .from('clients')
-      .select('id, name, industry, grade, owner_id, user_profiles(id, full_name)')
+      .select(`
+        id, name, industry, grade, owner_id,
+        website, linkedin_url, location, headcount,
+        relationship_health, relationship_notes, culture_notes, hiring_preferences,
+        fee_percentage, payment_terms_days, warranty_period_days,
+        user_profiles(id, full_name)
+      `)
       .eq('id', id)
       .single(),
     supabase
@@ -27,30 +36,55 @@ export default async function ClientDetailPage({ params }: Props) {
     supabase
       .from('user_profiles')
       .select('id, full_name')
-      .in('role', ['talent_specialist', 'talent_manager'])
       .order('full_name'),
+    supabase
+      .from('client_contacts')
+      .select('id, name, title, email, phone, is_primary, notes')
+      .eq('client_id', id)
+      .order('is_primary', { ascending: false })
+      .order('name'),
   ])
 
   if (!client) notFound()
 
   const owner = (Array.isArray(client.user_profiles) ? client.user_profiles[0] : client.user_profiles) as { id: string; full_name: string } | null
 
+  const profileData: ClientProfileData = {
+    industry: client.industry,
+    website: (client as Record<string, unknown>).website as string | null ?? null,
+    linkedin_url: (client as Record<string, unknown>).linkedin_url as string | null ?? null,
+    location: (client as Record<string, unknown>).location as string | null ?? null,
+    headcount: (client as Record<string, unknown>).headcount as number | null ?? null,
+    relationship_health: (client as Record<string, unknown>).relationship_health as string | null ?? null,
+    relationship_notes: (client as Record<string, unknown>).relationship_notes as string | null ?? null,
+    culture_notes: (client as Record<string, unknown>).culture_notes as string | null ?? null,
+    hiring_preferences: (client as Record<string, unknown>).hiring_preferences as string | null ?? null,
+    fee_percentage: (client as Record<string, unknown>).fee_percentage as number | null ?? null,
+    payment_terms_days: (client as Record<string, unknown>).payment_terms_days as number | null ?? null,
+    warranty_period_days: (client as Record<string, unknown>).warranty_period_days as number | null ?? null,
+  }
+
   return (
-    <div className="max-w-3xl">
-      <div className="mb-6">
+    <div className="max-w-3xl space-y-6">
+      {/* Header */}
+      <div>
         <Link href="/dashboard/clients" className="text-xs text-gray-400 hover:text-gray-600 transition-colors">
           ← Clients
         </Link>
         <div className="flex items-start justify-between mt-3">
           <div>
             <h1 className="text-2xl font-semibold text-gray-900">{client.name}</h1>
-            <p className="text-sm text-gray-500 mt-0.5">{client.industry ?? 'No industry set'}</p>
+            <p className="text-sm text-gray-500 mt-0.5">
+              {client.industry ?? 'No industry set'}
+              {(profileData.location) ? ` · ${profileData.location}` : ''}
+            </p>
           </div>
           <ClientGradeBadge grade={client.grade} />
         </div>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-xl p-5 mb-6">
+      {/* Client Owner */}
+      <div className="bg-white border border-gray-200 rounded-xl p-5">
         <dl className="grid grid-cols-2 gap-4 text-sm">
           <div>
             <dt className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Client Owner</dt>
@@ -70,6 +104,16 @@ export default async function ClientDetailPage({ params }: Props) {
         </dl>
       </div>
 
+      {/* Client Profile */}
+      <ClientProfileSection clientId={client.id} initial={profileData} />
+
+      {/* Key Contacts */}
+      <ClientContactsSection
+        clientId={client.id}
+        initialContacts={contacts ?? []}
+      />
+
+      {/* Roles */}
       <div>
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-base font-semibold text-gray-900">Roles</h2>

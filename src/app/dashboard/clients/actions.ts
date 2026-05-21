@@ -34,3 +34,79 @@ export async function updateClientOwnerAction(clientId: string, ownerId: string 
   revalidatePath(`/dashboard/clients/${clientId}`)
   revalidatePath('/dashboard/clients')
 }
+
+// ─── Client Profile ───────────────────────────────────────────────────────────
+
+export interface ClientProfileData {
+  industry?: string | null
+  website?: string | null
+  linkedin_url?: string | null
+  location?: string | null
+  headcount?: number | null
+  relationship_health?: string | null
+  relationship_notes?: string | null
+  culture_notes?: string | null
+  hiring_preferences?: string | null
+  fee_percentage?: number | null
+  payment_terms_days?: number | null
+  warranty_period_days?: number | null
+}
+
+export async function updateClientProfileAction(clientId: string, data: ClientProfileData) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+
+  const { error } = await supabase.from('clients').update(data).eq('id', clientId)
+  if (error) throw new Error(error.message)
+
+  revalidatePath(`/dashboard/clients/${clientId}`)
+  revalidatePath('/dashboard/clients')
+}
+
+// ─── Client Contacts ──────────────────────────────────────────────────────────
+
+export interface ContactData {
+  name: string
+  title?: string | null
+  email?: string | null
+  phone?: string | null
+  is_primary?: boolean
+  notes?: string | null
+}
+
+export async function addClientContactAction(clientId: string, contact: ContactData) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+
+  const { error } = await supabase.from('client_contacts').insert({ client_id: clientId, ...contact })
+  if (error) throw new Error(error.message)
+
+  revalidatePath(`/dashboard/clients/${clientId}`)
+}
+
+export async function updateClientContactAction(contactId: string, clientId: string, contact: ContactData) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+
+  const { error } = await supabase
+    .from('client_contacts')
+    .update({ ...contact, updated_at: new Date().toISOString() })
+    .eq('id', contactId)
+  if (error) throw new Error(error.message)
+
+  revalidatePath(`/dashboard/clients/${clientId}`)
+}
+
+export async function deleteClientContactAction(contactId: string, clientId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+
+  const { error } = await supabase.from('client_contacts').delete().eq('id', contactId)
+  if (error) throw new Error(error.message)
+
+  revalidatePath(`/dashboard/clients/${clientId}`)
+}

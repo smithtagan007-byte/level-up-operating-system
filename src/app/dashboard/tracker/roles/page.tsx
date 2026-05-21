@@ -15,23 +15,23 @@ export default async function RoleTrackerPage() {
     supabase
       .from('roles')
       .select('id, title, status, created_at, clients(id, name)')
-      .not('status', 'eq', 'closed')
+      .not('status', 'in', '("placed","closed")')
       .order('created_at', { ascending: false }),
     supabase.from('role_tracker').select('*'),
     supabase.from('user_profiles').select('id, full_name').order('full_name'),
     supabase.from('role_revenue').select('role_id, potential_revenue, weighted_forecast_revenue, actual_revenue, revenue_variance, revenue_status'),
-    supabase.from('role_team').select('role_id, user_id, role_on_role, user_profiles(full_name)').eq('is_active', true),
+    supabase.from('role_team').select('role_id, user_id, role_on_role').eq('is_active', true),
   ])
 
   const trackerMap = Object.fromEntries((trackers ?? []).map(t => [t.role_id, t]))
   const revenueMap = Object.fromEntries((revenues ?? []).map(r => [r.role_id, r]))
 
   // Build team map: role_id → { clientOwner, deliveryTeam }
+  const userNameMap = Object.fromEntries((users ?? []).map(u => [u.id, u.full_name]))
   const teamMap: Record<string, { clientOwner: string | null; deliveryTeam: string[] }> = {}
   for (const row of teamRows ?? []) {
     if (!teamMap[row.role_id]) teamMap[row.role_id] = { clientOwner: null, deliveryTeam: [] }
-    const up = Array.isArray(row.user_profiles) ? row.user_profiles[0] : row.user_profiles
-    const name = (up as { full_name: string } | null)?.full_name ?? 'Unknown'
+    const name = userNameMap[row.user_id] ?? 'Unknown'
     if (row.role_on_role === 'client_owner') {
       teamMap[row.role_id].clientOwner = name
     } else {
@@ -60,6 +60,8 @@ export default async function RoleTrackerPage() {
       date_opened: t?.date_opened ?? role.created_at,
       days_open: daysOpen(t?.date_opened ?? role.created_at, t?.date_closed ?? null),
       cvs_submitted: t?.cvs_submitted ?? 0,
+      cv_pending: t?.cv_pending ?? 0,
+      blocker: t?.blocker ?? null,
       next_action: t?.next_action ?? null,
       next_action_date: t?.next_action_date ?? null,
       follow_up_status: t?.follow_up_status ?? 'none',

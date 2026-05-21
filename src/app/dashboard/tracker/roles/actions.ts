@@ -3,13 +3,13 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
-export async function upsertRoleTrackerAction(roleId: string, fields: Record<string, unknown>) {
+export async function upsertRoleTrackerAction(roleId: string, roleTitle: string, fields: Record<string, unknown>) {
   const supabase = await createClient()
 
   const { error } = await supabase
     .from('role_tracker')
     .upsert(
-      { role_id: roleId, ...fields, updated_at: new Date().toISOString() },
+      { role_id: roleId, role_title: roleTitle, ...fields, updated_at: new Date().toISOString() },
       { onConflict: 'role_id' }
     )
 

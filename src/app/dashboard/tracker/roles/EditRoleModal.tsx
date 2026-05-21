@@ -54,7 +54,7 @@ export function EditRoleModal({ roleId, roleTitle, clientName, existing, users, 
         follow_up_status: data.follow_up_status || 'none',
         blocker: data.blocker || null,
       }
-      await upsertRoleTrackerAction(roleId, fields)
+      await upsertRoleTrackerAction(roleId, roleTitle, fields)
       onClose()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')

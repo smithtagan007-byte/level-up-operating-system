@@ -12,7 +12,7 @@ export default async function RoleIntakePage({ params }: Props) {
   const { id } = await params
   const supabase = await createClient()
 
-  const [{ data: role }, { data: intake }] = await Promise.all([
+  const [{ data: role, error: roleError }, { data: intake, error: intakeError }] = await Promise.all([
     supabase
       .from('roles')
       .select('id, title, status, intake_completed, clients(name)')
@@ -24,6 +24,9 @@ export default async function RoleIntakePage({ params }: Props) {
       .eq('role_id', id)
       .maybeSingle(),
   ])
+
+  if (roleError) console.error('[intake] role query error:', JSON.stringify(roleError))
+  if (intakeError) console.error('[intake] intake query error:', JSON.stringify(intakeError))
 
   if (!role) notFound()
 

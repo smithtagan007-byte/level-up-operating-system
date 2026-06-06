@@ -76,7 +76,9 @@ export default async function CandidatesPage() {
 
       {!candidates?.length ? (
         <div className="bg-white border border-gray-200 rounded-xl p-12 text-center">
-          <p className="text-gray-400 text-sm">No candidates yet. Add your first candidate above.</p>
+          <p className="text-sm font-semibold text-gray-700 mb-1">No candidates yet</p>
+          <p className="text-sm text-gray-400 mb-4">Add candidates, complete their scorecard and screening, then submit them through internal review before they reach the client.</p>
+          <p className="text-xs text-gray-400">Use &ldquo;Add Candidate&rdquo; above to get started.</p>
         </div>
       ) : (
         <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto table-container">

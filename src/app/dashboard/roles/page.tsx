@@ -56,7 +56,9 @@ export default async function RolesPage({ searchParams }: Props) {
 
       {!roles?.length ? (
         <div className="bg-white border border-gray-200 rounded-xl p-12 text-center">
-          <p className="text-gray-400 text-sm">No roles yet. Add your first role above.</p>
+          <p className="text-sm font-semibold text-gray-700 mb-1">No active roles yet</p>
+          <p className="text-sm text-gray-400 mb-4">Roles are the mandates you&apos;re working on. Each role has its own candidate pipeline, intake brief, and team assignment.</p>
+          <p className="text-xs text-gray-400">Use the &ldquo;New Role&rdquo; button above to get started.</p>
         </div>
       ) : (
         <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto table-container">

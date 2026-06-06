@@ -5,6 +5,7 @@ import { RoleActions } from './RoleActions'
 import { RoleRevenueSection } from './RoleRevenueSection'
 import { TeamSection } from './TeamSection'
 import { RoleCandidatesSection } from './RoleCandidatesSection'
+import { RoleGuidanceBanner } from './RoleGuidanceBanner'
 import type { TeamMember } from './TeamSection'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
@@ -21,7 +22,7 @@ export default async function RoleDetailPage({ params, searchParams }: Props) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  const [{ data: role }, { data: roleRevenue }, { data: profile }, { data: teamRows }, { data: allUsers }] = await Promise.all([
+  const [{ data: role }, { data: roleRevenue }, { data: profile }, { data: teamRows }, { data: allUsers }, { data: candidateSummary }] = await Promise.all([
     supabase
       .from('roles')
       .select('id, title, status, intake_completed, client_id, entered_stage_at, clients(id, name)')
@@ -46,12 +47,20 @@ export default async function RoleDetailPage({ params, searchParams }: Props) {
       .from('user_profiles')
       .select('id, full_name')
       .order('full_name'),
+    supabase
+      .from('candidates')
+      .select('id, submitted_to_client, client_owner_approved')
+      .eq('role_id', id),
   ])
 
   if (!role) notFound()
 
   const client = (Array.isArray(role.clients) ? role.clients[0] : role.clients) as { id: string; name: string } | null
   const isManager = ['talent_manager', 'director'].includes(profile?.role ?? '')
+
+  const candidates = candidateSummary ?? []
+  const approvedNotSubmitted = candidates.filter(c => c.client_owner_approved && !c.submitted_to_client).length
+  const submittedToClient = candidates.filter(c => c.submitted_to_client).length
 
   const userNameMap = Object.fromEntries((allUsers ?? []).map(u => [u.id, u.full_name]))
   const team: TeamMember[] = (teamRows ?? []).map(row => ({
@@ -98,6 +107,17 @@ export default async function RoleDetailPage({ params, searchParams }: Props) {
       </div>
 
       <div className="space-y-4">
+        {/* Guidance banner */}
+        <RoleGuidanceBanner
+          roleId={role.id}
+          status={role.status}
+          intakeCompleted={role.intake_completed ?? false}
+          candidateCount={candidates.length}
+          approvedNotSubmitted={approvedNotSubmitted}
+          submittedToClient={submittedToClient}
+          interviewsScheduled={0}
+        />
+
         {/* 1. Stage Management */}
         <div className="bg-white border border-gray-200 rounded-xl p-5">
           <h2 className="text-sm font-semibold text-gray-900 mb-4">Stage Management</h2>

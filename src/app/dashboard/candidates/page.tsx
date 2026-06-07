@@ -35,9 +35,12 @@ export default async function CandidatesPage() {
       .from('candidates')
       .select('id, full_name, email, risk_level, submitted_to_client, assigned_to, roles(title, status, clients(name))')
       .order('created_at', { ascending: false }),
+    // Only roles with completed intake that have moved past the intake stage
     supabase
       .from('roles')
       .select('id, title, clients(name)')
+      .eq('intake_completed', true)
+      .neq('status', 'intake')
       .order('title'),
   ])
 

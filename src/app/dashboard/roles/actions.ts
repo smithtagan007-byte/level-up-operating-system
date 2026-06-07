@@ -21,6 +21,14 @@ export async function createRoleAction(formData: FormData): Promise<{ id: string
   return { id: (data as { id: string }).id }
 }
 
+// Valid pipeline order — identical to candidate stages from sourcing onwards
+const PIPELINE_ORDER = [
+  'intake', 'sourcing', 'screening', 'in_review',
+  'approved', 'submitted', 'interview', 'offer',
+  'started', 'probation_completed', 'closed',
+]
+export { PIPELINE_ORDER }
+
 export async function updateRoleStatusAction(roleId: string, newStatus: string) {
   const supabase = await createClient()
 
@@ -44,6 +52,16 @@ export async function updateRoleStatusAction(roleId: string, newStatus: string) 
   if (error) throw new Error(error.message)
   revalidatePath('/dashboard/roles')
   revalidatePath(`/dashboard/roles/${roleId}`)
+}
+
+export async function updateRoleActivityStatusAction(roleId: string, activityStatus: string) {
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('roles')
+    .update({ activity_status: activityStatus })
+    .eq('id', roleId)
+  if (error) throw new Error(error.message)
+  revalidatePath('/dashboard/roles')
 }
 
 export async function markIntakeCompleteAction(roleId: string) {

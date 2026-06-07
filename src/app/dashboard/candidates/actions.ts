@@ -24,3 +24,68 @@ export async function createCandidateAction(formData: FormData) {
   revalidatePath('/dashboard/candidates')
   revalidatePath(`/dashboard/roles/${role_id}`)
 }
+
+// Pipeline stage order — role and candidate stages are identical from sourcing onwards
+const ROLE_STAGE_ORDER = [
+  'intake', 'sourcing', 'screening', 'in_review',
+  'approved', 'submitted', 'interview', 'offer',
+  'started', 'probation_completed', 'closed',
+]
+
+// 1:1 mapping — candidate stage directly sets the minimum role stage
+const CANDIDATE_TO_ROLE_STAGE: Record<string, string> = {
+  screening:           'screening',
+  in_review:           'in_review',
+  approved:            'approved',
+  submitted:           'submitted',
+  interview:           'interview',
+  offer:               'offer',
+  started:             'started',
+  probation_completed: 'probation_completed',
+}
+
+export async function updateCandidatePipelineStageAction(
+  candidateId: string,
+  stage: string,
+  roleId: string
+) {
+  const supabase = await createClient()
+
+  // 1. Update candidate stage
+  const { error } = await supabase
+    .from('candidates')
+    .update({ pipeline_stage: stage })
+    .eq('id', candidateId)
+  if (error) throw new Error(error.message)
+
+  // 2. Auto-advance role stage if needed (never go backward)
+  const targetRoleStage = CANDIDATE_TO_ROLE_STAGE[stage]
+  if (targetRoleStage) {
+    const { data: role } = await supabase
+      .from('roles')
+      .select('status, intake_completed')
+      .eq('id', roleId)
+      .single()
+
+    if (role) {
+      const currentIdx = ROLE_STAGE_ORDER.indexOf(role.status)
+      const targetIdx  = ROLE_STAGE_ORDER.indexOf(targetRoleStage)
+
+      // Only advance — never regress
+      if (targetIdx > currentIdx) {
+        // Respect the intake gate: can't jump to sourcing without a complete intake
+        const canAdvance = !(targetRoleStage === 'sourcing' && !role.intake_completed)
+        if (canAdvance) {
+          await supabase
+            .from('roles')
+            .update({ status: targetRoleStage, entered_stage_at: new Date().toISOString() })
+            .eq('id', roleId)
+        }
+      }
+    }
+  }
+
+  revalidatePath(`/dashboard/roles/${roleId}`)
+  revalidatePath('/dashboard/roles')
+  revalidatePath('/dashboard/candidates')
+}

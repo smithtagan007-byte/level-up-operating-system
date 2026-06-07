@@ -1,11 +1,14 @@
 export const STAGE_THRESHOLDS: Record<string, number> = {
-  intake: 2,
-  sourcing: 5,
-  screening: 4,
-  shortlisted: 3,
-  submitted: 3,
-  interviewing: 5,
-  offer: 3,
+  intake:               2,
+  sourcing:             5,
+  screening:            4,
+  in_review:            3,
+  approved:             2,   // approved → should be submitted quickly
+  submitted:            3,
+  interview:            5,
+  offer:                3,
+  started:              90,  // 90-day probation window
+  // probation_completed intentionally omitted — no aging on success
 }
 
 export type AgeColor = 'gray' | 'amber' | 'red'
@@ -22,7 +25,7 @@ export function stageAgeInfo(
 ): StageAgeInfo | null {
   if (!enteredAt) return null
   const threshold = STAGE_THRESHOLDS[status]
-  if (threshold === undefined) return null // closed, placed, etc.
+  if (threshold === undefined) return null // closed, probation_completed, etc.
 
   const entered = new Date(enteredAt)
   const now = new Date()

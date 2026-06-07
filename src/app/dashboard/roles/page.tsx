@@ -1,21 +1,24 @@
 import { createClient } from '@/lib/supabase/server'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { AddRoleModal } from './AddRoleModal'
+import { RolesBoardClient } from './RolesBoardClient'
 import { stageAgeInfo } from '@/lib/stageAge'
 import Link from 'next/link'
+import { LayoutGrid, List } from 'lucide-react'
 
 interface Props {
-  searchParams: Promise<{ client?: string }>
+  searchParams: Promise<{ client?: string; view?: string }>
 }
 
 export default async function RolesPage({ searchParams }: Props) {
-  const { client: preselectedClientId } = await searchParams
+  const { client: preselectedClientId, view } = await searchParams
+  const activeView = view === 'board' ? 'board' : 'list'
   const supabase = await createClient()
 
-  const [{ data: roles }, { data: clients }, { data: teamRows }, { data: allUsers }] = await Promise.all([
+  const [{ data: roles }, { data: clients }, { data: teamRows }, { data: allUsers }, { data: candidateRows }] = await Promise.all([
     supabase
       .from('roles')
-      .select('id, title, status, intake_completed, entered_stage_at, clients(name)')
+      .select('id, title, status, activity_status, intake_completed, entered_stage_at, clients(name, grade)')
       .order('created_at', { ascending: false }),
     supabase
       .from('clients')
@@ -28,9 +31,12 @@ export default async function RolesPage({ searchParams }: Props) {
     supabase
       .from('user_profiles')
       .select('id, full_name'),
+    supabase
+      .from('candidates')
+      .select('role_id'),
   ])
 
-  // Build a map: role_id → { clientOwner, specialistCount }
+  // Team map: role_id → { clientOwner, specialistCount }
   const userNameMap = Object.fromEntries((allUsers ?? []).map(u => [u.id, u.full_name]))
   type TeamInfo = { clientOwnerName: string | null; specialistCount: number }
   const teamMap: Record<string, TeamInfo> = {}
@@ -44,24 +50,85 @@ export default async function RolesPage({ searchParams }: Props) {
     }
   }
 
+  // Candidate count map: role_id → count
+  const candidateCountMap: Record<string, number> = {}
+  for (const row of candidateRows ?? []) {
+    if (row.role_id) {
+      candidateCountMap[row.role_id] = (candidateCountMap[row.role_id] ?? 0) + 1
+    }
+  }
+
   return (
     <div>
+      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">Roles</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{roles?.length ?? 0} role{roles?.length !== 1 ? 's' : ''}</p>
+          <p className="text-sm text-gray-500 mt-0.5">
+            {roles?.length ?? 0} role{roles?.length !== 1 ? 's' : ''}
+          </p>
         </div>
-        <AddRoleModal clients={clients ?? []} preselectedClientId={preselectedClientId} />
+        <div className="flex items-center gap-3">
+          {/* View toggle */}
+          <div className="flex items-center bg-gray-100 rounded-lg p-0.5 gap-0.5">
+            <Link
+              href="/dashboard/roles?view=list"
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                activeView === 'list'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <List size={13} />
+              List
+            </Link>
+            <Link
+              href="/dashboard/roles?view=board"
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                activeView === 'board'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <LayoutGrid size={13} />
+              Board
+            </Link>
+          </div>
+          <AddRoleModal clients={clients ?? []} preselectedClientId={preselectedClientId} />
+        </div>
       </div>
 
+      {/* Empty state */}
       {!roles?.length ? (
         <div className="bg-white border border-gray-200 rounded-xl p-12 text-center">
           <p className="text-sm font-semibold text-gray-700 mb-1">No active roles yet</p>
-          <p className="text-sm text-gray-400 mb-4">Roles are the mandates you&apos;re working on. Each role has its own candidate pipeline, intake brief, and team assignment.</p>
+          <p className="text-sm text-gray-400 mb-4">
+            Roles are the mandates you&apos;re working on. Each role has its own candidate pipeline, intake brief, and team assignment.
+          </p>
           <p className="text-xs text-gray-400">Use the &ldquo;New Role&rdquo; button above to get started.</p>
         </div>
+      ) : activeView === 'board' ? (
+        /* ── BOARD VIEW ─────────────────────────────────── */
+        <RolesBoardClient
+          roles={(roles ?? []).map(role => {
+            const clientRow = (Array.isArray(role.clients) ? role.clients[0] : role.clients) as { name: string; grade?: string | null } | null
+            return {
+              id: role.id,
+              title: role.title,
+              status: role.status,
+              activity_status: (role as { activity_status?: string | null }).activity_status ?? 'active',
+              intake_completed: role.intake_completed,
+              entered_stage_at: (role as { entered_stage_at?: string | null }).entered_stage_at ?? null,
+              clientName: clientRow?.name ?? null,
+              clientGrade: clientRow?.grade ?? null,
+              candidateCount: candidateCountMap[role.id] ?? 0,
+            }
+          })}
+        />
+
       ) : (
-        <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto table-container">
+        /* ── LIST VIEW ──────────────────────────────────── */
+        <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto">
           <table className="min-w-full text-sm">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50">
@@ -82,7 +149,9 @@ export default async function RolesPage({ searchParams }: Props) {
                 return (
                   <tr key={role.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-5 py-4 font-medium text-gray-900">{role.title}</td>
-                    <td className="px-5 py-4 text-gray-600">{clientRow?.name ?? <span className="text-gray-300">—</span>}</td>
+                    <td className="px-5 py-4 text-gray-600">
+                      {clientRow?.name ?? <span className="text-gray-300">—</span>}
+                    </td>
                     <td className="px-5 py-4">
                       {team.clientOwnerName
                         ? <span className="text-gray-700 text-sm">{team.clientOwnerName}</span>

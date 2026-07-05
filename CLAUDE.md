@@ -98,7 +98,7 @@ Phase 1 in progress.
 ## Supabase
 Connection string to be provided by user.
 
-## Deployment & Session Continuity
+## Deployment
 - **GitHub repo:** `smithtagan007-byte/level-up-operating-system` — transferred
   2026-07-05 from `tagan006` to unify identity across all Level Up / Naledi
   projects (see below).
@@ -119,6 +119,8 @@ Connection string to be provided by user.
 - Before ending a deploy-affecting session, run `git status` and commit any
   untracked files — don't assume local dev state matches what's on GitHub.
 
-## Session Status (updated 2026-07-05)
-Repo ownership transferred and git remote re-pointed. Not yet imported into
-Vercel — first deploy still pending.
+## Session Start Checklist
+1. `git log --oneline -10` — trust this over any hand-written status note.
+2. `git status` — resolve or commit anything untracked before assuming the
+   working tree matches what's deployed.
+3. Confirm git identity before pushing anything (see above).

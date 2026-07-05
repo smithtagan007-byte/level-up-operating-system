@@ -97,3 +97,28 @@ Phase 1 in progress.
 
 ## Supabase
 Connection string to be provided by user.
+
+## Deployment & Session Continuity
+- **GitHub repo:** `smithtagan007-byte/level-up-operating-system` — transferred
+  2026-07-05 from `tagan006` to unify identity across all Level Up / Naledi
+  projects (see below).
+- **Production branch:** `main`
+- **Vercel project:** not yet imported as of 2026-07-05 — import from
+  `vercel.com/new` under the `smithtagan007-byte` account, production branch `main`
+- **Git identity:** commits MUST be authored as `smithtagan007-byte`. This repo's
+  local remote was `tagan006` until the 2026-07-05 transfer — if `git push` ever
+  fails with an ownership/permission error, check `git remote -v` points at
+  `smithtagan007-byte/level-up-operating-system`, and check:
+  ```
+  git config user.name   # must be smithtagan007-byte
+  gh auth status         # active account must be smithtagan007-byte
+  ```
+  A mismatched author was previously blocking all Naledi deploys via Vercel's
+  team-membership gate for weeks — same risk applies here once this is imported
+  to Vercel.
+- Before ending a deploy-affecting session, run `git status` and commit any
+  untracked files — don't assume local dev state matches what's on GitHub.
+
+## Session Status (updated 2026-07-05)
+Repo ownership transferred and git remote re-pointed. Not yet imported into
+Vercel — first deploy still pending.
